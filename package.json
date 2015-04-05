@@ -1,0 +1,12 @@
+{
+  "name": "CausticDomain",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www"
+  },
+  "dependencies": {
+    "express": "~4.12.2",
+    "socket.io": "~1.3.5"
+  }
+}
