@@ -32,10 +32,11 @@ Player.prototype.getMovePacket = function() {
 var Boss = function (x, y, health) {
     this.x = x; this.y = y;
     this.health = health;
+    this.maxHealth = health;
 };
 
 Boss.prototype.getStartPacket = function() {
-    return {x: this.x, y: this.y, health: this.health};
+    return {x: this.x, y: this.y, health: this.health, maxHealth: this.maxHealth};
 }
 
 Boss.prototype.getBossPacket = function(){

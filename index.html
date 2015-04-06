@@ -42,6 +42,7 @@
         var Boss = function (x, y, health) {
             this.x = x; this.y = y;
             this.health = health;
+            this.maxHealth = health;
         };
 
         Boss.prototype.draw = function(ctx) {
@@ -49,6 +50,14 @@
             ctx.beginPath();
             ctx.arc(this.x, this.y, 30, 0, 2 * Math.PI);
             ctx.stroke();
+        };
+
+        Boss.prototype.drawHealth = function(ctx) {
+            ctx.fillStyle = "red";
+            ctx.fillRect(60, 20, 680, 30);
+
+            ctx.fillStyle = "green";
+            ctx.fillRect(60, 20, 680 * this.health / this.maxHealth, 30);
         };
 
         // Declare and initialize the players
@@ -157,6 +166,7 @@
             boss.x = data.boss.x;
             boss.y = data.boss.y;
             boss.health = data.boss.health;
+            boss.maxHealth = data.boss.maxHealth;
         });
 
         // A change in another player's movement was detected and sent
@@ -193,6 +203,8 @@
             myPlayer.draw(Canvas.ctx);
             otherPlayer.draw(Canvas.ctx);
             boss.draw(Canvas.ctx);
+
+            boss.drawHealth(Canvas.ctx);
         };
 
         function updateLoop() {
