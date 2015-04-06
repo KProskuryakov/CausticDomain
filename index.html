@@ -8,66 +8,154 @@
     <script>
         var socket = io();
 
-        var num = 0;
+        var Player = function(x, y, num) {
+            this.x = x; this.y = y;
+            this.vel = 0; this.moveDir = 0;
+            this.num = num;
+        };
 
-        var oldMousePos = {x: 0, y: 0};
-        var mousePos = {x: 0, y: 0};
+        var myPlayer = new Player(0, 0, 0);
+        var otherPlayer = new Player(0, 0, 0);
 
-        var otherPlayer = {x: 0, y: 0};
+        var Canvas = {};
+        var Game = {};
+
+        Player.prototype.getMovePacket = function() {
+            return {x: this.x, y: this.y, vel: this.vel, moveDir: this.moveDir, num: this.num};
+        };
 
         function initialize() {
             var canvas = document.getElementById("myCanvas");
-            canvas.addEventListener('mousemove', onMouseMove, false);
+            Canvas.ctx = canvas.getContext("2d");
+            canvas.addEventListener('keydown', checkKeys, true);
+            canvas.addEventListener('keyup', checkKeys, true);
         }
 
-        function onMouseMove(evt) {
-            var canvas = document.getElementById("myCanvas");
-            var rect = canvas.getBoundingClientRect();
-            mousePos.x = evt.clientX - rect.left;
-            mousePos.y = evt.clientY - rect.top;
+        Canvas.keys = [];
+        Canvas.curKeyEvent = -1;
+
+        function checkKeys(e) {
+            e = e || event; // to deal with IE
+            Canvas.keys[e.keyCode] = e.type == 'keydown';
+            if (Canvas.keys[87] && Canvas.keys[83] || Canvas.keys[65] && Canvas.keys[68] || !Canvas.keys[87] && !Canvas.keys[83] && !Canvas.keys[65] && !Canvas.keys[68]) {
+                myPlayer.vel = 0;
+                if (Canvas.curKeyEvent != 0) {
+                    Canvas.curKeyEvent = 0;
+                    socket.emit("moveChange", myPlayer.getMovePacket());
+                }
+            } else if (Canvas.keys[87] && Canvas.keys[65]) {
+                myPlayer.moveDir = -3 * Math.PI / 4;
+                myPlayer.vel = 100;
+                if (Canvas.curKeyEvent != 1) {
+                    Canvas.curKeyEvent = 1;
+                    socket.emit("moveChange", myPlayer.getMovePacket());
+                }
+            } else if (Canvas.keys[87] && Canvas.keys[68]) {
+                myPlayer.moveDir = -Math.PI / 4;
+                myPlayer.vel = 100;
+                if (Canvas.curKeyEvent != 2) {
+                    Canvas.curKeyEvent = 2;
+                    socket.emit("moveChange", myPlayer.getMovePacket());
+                }
+            } else if (Canvas.keys[83] && Canvas.keys[65]) {
+                myPlayer.moveDir = 3 * Math.PI / 4;
+                myPlayer.vel = 100;
+                if (Canvas.curKeyEvent != 3) {
+                    Canvas.curKeyEvent = 3;
+                    socket.emit("moveChange", myPlayer.getMovePacket());
+                }
+            } else if (Canvas.keys[83] && Canvas.keys[68]) {
+                myPlayer.moveDir = Math.PI / 4;
+                myPlayer.vel = 100;
+                if (Canvas.curKeyEvent != 4) {
+                    Canvas.curKeyEvent = 4;
+                    socket.emit("moveChange", myPlayer.getMovePacket());
+                }
+            } else if (Canvas.keys[87]) {
+                myPlayer.moveDir = -Math.PI / 2;
+                myPlayer.vel = 100;
+                if (Canvas.curKeyEvent != 5) {
+                    Canvas.curKeyEvent = 5;
+                    socket.emit("moveChange", myPlayer.getMovePacket());
+                }
+            } else if (Canvas.keys[83]) {
+                myPlayer.moveDir = Math.PI / 2;
+                myPlayer.vel = 100;
+                if (Canvas.curKeyEvent != 6) {
+                    Canvas.curKeyEvent = 6;
+                    socket.emit("moveChange", myPlayer.getMovePacket());
+                }
+            } else if (Canvas.keys[65]) {
+                myPlayer.moveDir = Math.PI;
+                myPlayer.vel = 100;
+                if (Canvas.curKeyEvent != 7) {
+                    Canvas.curKeyEvent = 7;
+                    socket.emit("moveChange", myPlayer.getMovePacket());
+                }
+            } else if (Canvas.keys[68]) {
+                myPlayer.moveDir = 0;
+                myPlayer.vel = 100;
+                if (Canvas.curKeyEvent != 8) {
+                    Canvas.curKeyEvent = 8;
+                    socket.emit("moveChange", myPlayer.getMovePacket());
+                }
+            }
+            return false;
         }
+
 
 
         socket.on('start', function (data) {
-            num = data.num;
+            myPlayer.num = data.num;
         });
 
-        socket.on('update', function (data) {
+        socket.on('moveChange', function (data) {
             otherPlayer.x = data.x;
             otherPlayer.y = data.y;
+            otherPlayer.vel = data.vel;
+            otherPlayer.moveDir = data.moveDir;
         });
 
 
-        var updateIteration = 0;
-        function update() {
-            updateIteration++;
-            console.log(mousePos.x + " " + oldMousePos.x);
-            if ((oldMousePos.x != mousePos.x || oldMousePos.y != mousePos.y) && updateIteration >= 2) {
-                socket.emit('update', {x: mousePos.x, y: mousePos.y, num: num});
-                updateIteration = 0;
-                oldMousePos.x = mousePos.x;
-                oldMousePos.y = mousePos.y;
+
+        Game.lastUpdate = new Date().getTime();
+
+        Game.update = function () {
+            var dt = (new Date().getTime() - Game.lastUpdate) / 1000;
+
+            if (myPlayer.vel != 0) {
+                myPlayer.x += Math.cos(myPlayer.moveDir) * myPlayer.vel * dt;
+                myPlayer.y += Math.sin(myPlayer.moveDir) * myPlayer.vel * dt;
             }
-            draw();
+
+            if (otherPlayer.vel != 0) {
+                otherPlayer.x += Math.cos(otherPlayer.moveDir) * otherPlayer.vel * dt;
+                otherPlayer.y += Math.sin(otherPlayer.moveDir) * otherPlayer.vel * dt;
+            }
+
+            Game.lastUpdate = new Date().getTime();
+        };
+
+        Canvas.draw = function() {
+            Canvas.ctx.clearRect(0, 0, 800, 600);
+
+            Canvas.ctx.strokeStyle = "black";
+
+            Canvas.ctx.beginPath();
+            Canvas.ctx.arc(myPlayer.x, myPlayer.y, 10, 0, 2 * Math.PI);
+            Canvas.ctx.stroke();
+
+            Canvas.ctx.beginPath();
+            Canvas.ctx.arc(otherPlayer.x, otherPlayer.y, 10, 0, 2 * Math.PI);
+            Canvas.ctx.stroke();
+        };
+
+        function updateLoop() {
+            Game.update();
+            Canvas.draw();
         }
 
-        function draw() {
-            var canvas = document.getElementById("myCanvas");
-            var ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, 800, 600);
-
-            ctx.strokeStyle = "black";
-
-            ctx.beginPath();
-            ctx.arc(mousePos.x, mousePos.y, 10, 0, 2 * Math.PI);
-            ctx.stroke();
-
-            ctx.beginPath();
-            ctx.arc(otherPlayer.x, otherPlayer.y, 10, 0, 2 * Math.PI);
-            ctx.stroke();
-        }
-
-        setInterval(update, 1000 / 60);
+        setInterval(updateLoop, 1000 / 60);
 
     </script>
 
@@ -75,6 +163,6 @@
 
 </head>
 <body onload=initialize()>
-<canvas id="myCanvas" width="800" height="600" style="border:1px solid"></canvas>
+<canvas id="myCanvas" width="800" height="600" style="border:1px solid" tabindex="0"></canvas>
 </body>
 </html>
