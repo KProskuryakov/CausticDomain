@@ -6,27 +6,75 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        function initialize() {}
+        var socket = io();
+
+        var num = 0;
+
+        var oldMousePos = {x: 0, y: 0};
+        var mousePos = {x: 0, y: 0};
+
+        var otherPlayer = {x: 0, y: 0};
+
+        function initialize() {
+            var canvas = document.getElementById("myCanvas");
+            canvas.addEventListener('mousemove', onMouseMove, false);
+        }
+
+        function onMouseMove(evt) {
+            var canvas = document.getElementById("myCanvas");
+            var rect = canvas.getBoundingClientRect();
+            mousePos.x = evt.clientX - rect.left;
+            mousePos.y = evt.clientY - rect.top;
+        }
+
+
+        socket.on('start', function (data) {
+            num = data.num;
+        });
+
+        socket.on('update', function (data) {
+            otherPlayer.x = data.x;
+            otherPlayer.y = data.y;
+        });
+
+
+        var updateIteration = 0;
+        function update() {
+            updateIteration++;
+            console.log(mousePos.x + " " + oldMousePos.x);
+            if ((oldMousePos.x != mousePos.x || oldMousePos.y != mousePos.y) && updateIteration >= 2) {
+                socket.emit('update', {x: mousePos.x, y: mousePos.y, num: num});
+                updateIteration = 0;
+                oldMousePos.x = mousePos.x;
+                oldMousePos.y = mousePos.y;
+            }
+            draw();
+        }
+
+        function draw() {
+            var canvas = document.getElementById("myCanvas");
+            var ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, 800, 600);
+
+            ctx.strokeStyle = "black";
+
+            ctx.beginPath();
+            ctx.arc(mousePos.x, mousePos.y, 10, 0, 2 * Math.PI);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.arc(otherPlayer.x, otherPlayer.y, 10, 0, 2 * Math.PI);
+            ctx.stroke();
+        }
+
+        setInterval(update, 1000 / 60);
 
     </script>
 
-    <style>
-        body {
-            background-color: #222222;
-        }
-        .canvas {
-            border:1px solid;
-            margin-left: auto;
-            margin-right: auto;
-            background-color: #666666;
-            display: block;
-            width: 800px;
-            height: 600px;
-        }
-    </style>
+
 
 </head>
 <body onload=initialize()>
-<canvas class="canvas" id="gameCanvas"></canvas>
+<canvas id="myCanvas" width="800" height="600" style="border:1px solid"></canvas>
 </body>
 </html>
