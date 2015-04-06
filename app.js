@@ -20,13 +20,13 @@ var Player = function(x, y, num, socket) {
     this.socket = socket;
 };
 
+Player.prototype.getStartPacket = function() {
+    return {x: this.x, y: this.y, vel: this.vel, moveDir: this.moveDir, num: this.num};
+}
+
 Player.prototype.getMovePacket = function() {
     return {x: this.x, y: this.y, vel: this.vel, moveDir: this.moveDir, num: this.num};
 };
-
-var player1 = null;
-var player2 = null;
-
 
 
 var Boss = function (x, y, health) {
@@ -34,9 +34,17 @@ var Boss = function (x, y, health) {
     this.health = health;
 };
 
+Boss.prototype.getStartPacket = function() {
+    return {x: this.x, y: this.y, health: this.health};
+}
+
 Boss.prototype.getBossPacket = function(){
     return {x: this.x, y: this.y, health: this.health};
 };
+
+
+var player1 = null;
+var player2 = null;
 
 var boss = new Boss(400, 300, 1000);
 
@@ -58,13 +66,10 @@ io.on('connection', function (socket) {
     console.log("New connection on port 8080.");
     if (player1 == null) {
         player1 = new Player(0, 0, 1, socket);
-        socket.emit("start", {num: 1});
-        socket.emit("bossUpdate", boss.getBossPacket());
+        socket.emit("start", {num: 1, boss: boss.getStartPacket()});
     } else if (player2 == null) {
         player2 = new Player(0, 0, 2, socket);
-        socket.emit("start", {num: 2});
-        socket.emit("bossUpdate", boss.getBossPacket());
-        socket.emit('moveChange', player1.getMovePacket());
+        socket.emit("start", {num: 2, boss: boss.getStartPacket(), player: player1.getStartPacket()});
     }
 
     socket.on('update', function(data) {

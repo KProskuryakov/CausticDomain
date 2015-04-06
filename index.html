@@ -6,18 +6,22 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
+        // Initialize connection with server
         var socket = io();
 
+        // Represents the human entities in the game
         var Player = function(x, y, num) {
             this.x = x; this.y = y;
             this.vel = 0; this.moveDir = 0;
             this.num = num;
         };
 
+        // Constructs an update packet that contains the location and velocity of the player
         Player.prototype.getMovePacket = function() {
             return {x: this.x, y: this.y, vel: this.vel, moveDir: this.moveDir, num: this.num};
         };
 
+        // Increments the player's position
         Player.prototype.update = function(dt) {
             if (this.vel != 0) {
                 this.x += Math.cos(this.moveDir) * this.vel * dt;
@@ -25,6 +29,7 @@
             }
         };
 
+        // Draws the player on the canvas' context
         Player.prototype.draw = function(ctx) {
             ctx.strokeStyle = "black";
             ctx.beginPath();
@@ -32,12 +37,32 @@
             ctx.stroke();
         };
 
+
+        // Represents the boss entities in the game
+        var Boss = function (x, y, health) {
+            this.x = x; this.y = y;
+            this.health = health;
+        };
+
+        Boss.prototype.draw = function(ctx) {
+            ctx.strokeStyle = "red";
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, 30, 0, 2 * Math.PI);
+            ctx.stroke();
+        };
+
+        // Declare and initialize the players
         var myPlayer = new Player(0, 0, 0);
         var otherPlayer = new Player(0, 0, 0);
 
+        // Declare the boss
+        var boss = new Boss(0, 0, 0);
+
+        // Declare the namespaces for various functions
         var Canvas = {};
         var Game = {};
 
+        // Called at the beginning to initialize the event listeners on the canvas
         function initialize() {
             var canvas = document.getElementById("myCanvas");
             Canvas.ctx = canvas.getContext("2d");
@@ -118,16 +143,35 @@
         }
 
 
-
+        // Server sends client data upon first connecting
         socket.on('start', function (data) {
             myPlayer.num = data.num;
+
+            if (data.player != null) {
+                otherPlayer.x = data.player.x;
+                otherPlayer.y = data.player.y;
+                otherPlayer.vel = data.player.vel;
+                otherPlayer.moveDir = data.player.moveDir;
+            }
+
+            boss.x = data.boss.x;
+            boss.y = data.boss.y;
+            boss.health = data.boss.health;
         });
 
+        // A change in another player's movement was detected and sent
         socket.on('moveChange', function (data) {
             otherPlayer.x = data.x;
             otherPlayer.y = data.y;
             otherPlayer.vel = data.vel;
             otherPlayer.moveDir = data.moveDir;
+        });
+
+        // A change in the boss was sent
+        socket.on('bossUpdate', function (data) {
+            boss.x = data.x;
+            boss.y = data.y;
+            boss.health = data.health;
         });
 
 
@@ -148,6 +192,7 @@
 
             myPlayer.draw(Canvas.ctx);
             otherPlayer.draw(Canvas.ctx);
+            boss.draw(Canvas.ctx);
         };
 
         function updateLoop() {
@@ -158,8 +203,6 @@
         setInterval(updateLoop, 1000 / 60);
 
     </script>
-
-
 
 </head>
 <body onload=initialize()>
