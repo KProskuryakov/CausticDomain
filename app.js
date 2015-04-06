@@ -29,6 +29,19 @@ var player2 = null;
 
 
 
+var Boss = function (x, y, health) {
+    this.x = x; this.y = y;
+    this.health = health;
+};
+
+Boss.prototype.getBossPacket = function(){
+    return {x: this.x, y: this.y, health: this.health};
+};
+
+var boss = new Boss(400, 300, 1000);
+
+
+
 var Game = {};
 
 Game.updatesPerSecond = 60;
@@ -46,9 +59,11 @@ io.on('connection', function (socket) {
     if (player1 == null) {
         player1 = new Player(0, 0, 1, socket);
         socket.emit("start", {num: 1});
+        socket.emit("bossUpdate", boss.getBossPacket());
     } else if (player2 == null) {
         player2 = new Player(0, 0, 2, socket);
         socket.emit("start", {num: 2});
+        socket.emit("bossUpdate", boss.getBossPacket());
         socket.emit('moveChange', player1.getMovePacket());
     }
 

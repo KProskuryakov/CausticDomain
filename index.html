@@ -14,15 +14,29 @@
             this.num = num;
         };
 
+        Player.prototype.getMovePacket = function() {
+            return {x: this.x, y: this.y, vel: this.vel, moveDir: this.moveDir, num: this.num};
+        };
+
+        Player.prototype.update = function(dt) {
+            if (this.vel != 0) {
+                this.x += Math.cos(this.moveDir) * this.vel * dt;
+                this.y += Math.sin(this.moveDir) * this.vel * dt;
+            }
+        };
+
+        Player.prototype.draw = function(ctx) {
+            ctx.strokeStyle = "black";
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, 10, 0, 2 * Math.PI);
+            ctx.stroke();
+        };
+
         var myPlayer = new Player(0, 0, 0);
         var otherPlayer = new Player(0, 0, 0);
 
         var Canvas = {};
         var Game = {};
-
-        Player.prototype.getMovePacket = function() {
-            return {x: this.x, y: this.y, vel: this.vel, moveDir: this.moveDir, num: this.num};
-        };
 
         function initialize() {
             var canvas = document.getElementById("myCanvas");
@@ -123,15 +137,8 @@
         Game.update = function () {
             var dt = (new Date().getTime() - Game.lastUpdate) / 1000;
 
-            if (myPlayer.vel != 0) {
-                myPlayer.x += Math.cos(myPlayer.moveDir) * myPlayer.vel * dt;
-                myPlayer.y += Math.sin(myPlayer.moveDir) * myPlayer.vel * dt;
-            }
-
-            if (otherPlayer.vel != 0) {
-                otherPlayer.x += Math.cos(otherPlayer.moveDir) * otherPlayer.vel * dt;
-                otherPlayer.y += Math.sin(otherPlayer.moveDir) * otherPlayer.vel * dt;
-            }
+            myPlayer.update(dt);
+            otherPlayer.update(dt);
 
             Game.lastUpdate = new Date().getTime();
         };
@@ -139,15 +146,8 @@
         Canvas.draw = function() {
             Canvas.ctx.clearRect(0, 0, 800, 600);
 
-            Canvas.ctx.strokeStyle = "black";
-
-            Canvas.ctx.beginPath();
-            Canvas.ctx.arc(myPlayer.x, myPlayer.y, 10, 0, 2 * Math.PI);
-            Canvas.ctx.stroke();
-
-            Canvas.ctx.beginPath();
-            Canvas.ctx.arc(otherPlayer.x, otherPlayer.y, 10, 0, 2 * Math.PI);
-            Canvas.ctx.stroke();
+            myPlayer.draw(Canvas.ctx);
+            otherPlayer.draw(Canvas.ctx);
         };
 
         function updateLoop() {
