@@ -1,5 +1,6 @@
 /**
  * Created by Kostya on 4/8/2015.
+ * Testing git
  */
 var Canvas = {};
 
