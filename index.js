@@ -1,9 +1,7 @@
 /**
  * Created by Kostya on 4/8/2015.
+ * browserify index.js > bundle.js
  */
-require('buffer');
-
-
 // Initialize connection with server
 var socket = io();
 
@@ -16,9 +14,7 @@ var Player = function(x, y, num) {
 
 // Constructs an update packet that contains the location and velocity of the player
 Player.prototype.getMovePacket = function() {
-//            return {x: this.x, y: this.y, vel: this.vel, moveDir: this.moveDir, num: this.num};
-    var string = "" + this.x.toString() + " " + this.y.toString() + " " + this.vel.toString() + " " + this.moveDir.toString() + " " + this.num.toString();
-    return {stuff: string};
+    return {x: this.x, y: this.y, vel: this.vel, moveDir: this.moveDir, num: this.num};
 };
 
 // Increments the player's position

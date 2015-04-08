@@ -85,25 +85,22 @@ io.on('connection', function (socket) {
     });
 
     socket.on('moveChange', function(data) {
-
-        console.log(data.stuff);
-
-        //if (data.num == 1) {
-        //    if (player2 != null) {
-        //        player2.socket.emit('moveChange', data);
-        //    }
-        //    player1.x = data.x;
-        //    player1.y = data.y;
-        //    player1.vel = data.vel;
-        //    player1.moveDir = data.moveDir;
-        //} else if (data.num == 2) {
-        //    if (player1 != null) {
-        //        player1.socket.emit('moveChange', data);
-        //    }
-        //    player2.x = data.x;
-        //    player2.y = data.y;
-        //    player2.vel = data.vel;
-        //    player2.moveDir = data.moveDir;
-        //}
+        if (data.num == 1) {
+            if (player2 != null) {
+                player2.socket.emit('moveChange', data);
+            }
+            player1.x = data.x;
+            player1.y = data.y;
+            player1.vel = data.vel;
+            player1.moveDir = data.moveDir;
+        } else if (data.num == 2) {
+            if (player1 != null) {
+                player1.socket.emit('moveChange', data);
+            }
+            player2.x = data.x;
+            player2.y = data.y;
+            player2.vel = data.vel;
+            player2.moveDir = data.moveDir;
+        }
     })
 });
