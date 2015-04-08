@@ -3,8 +3,10 @@
  */
 var Game = {};
 
+// The time value of the last dt update
 Game.lastUpdate = new Date().getTime();
 
+// The update loop that iterates through all game objects
 Game.update = function (myPlayer, otherPlayer) {
     var dt = (new Date().getTime() - Game.lastUpdate) / 1000;
 

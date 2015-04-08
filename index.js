@@ -5,12 +5,13 @@
 // Initialize connection with server
 var socket = io();
 
+// Browserify boilerplate, initializes all instances of module code
 var Game = require("./client_game.js");
 var Canvas = require("./canvas.js");
 var Player = require("./player.js");
 var Boss = require("./boss.js");
 
-
+// TODO create the Skill definition (in another file) and implement
 var Skill = function(x, y, dir, r, cir, castTime, hitsPlayers, hitsEnemies, damage, healing) {
 
 };
@@ -21,10 +22,6 @@ var otherPlayer = new Player(0, 0, 0);
 
 // Declare the boss
 var boss = new Boss(0, 0, 0);
-
-// Declare the namespaces for various functions
-
-
 
 // Called at the beginning to initialize the event listeners on the canvas
 window.onload = function() {
@@ -69,6 +66,7 @@ socket.on('bossUpdate', function (data) {
     boss.health = data.health;
 });
 
+// Updates 60 times a second as well as draws the updated screen
 function updateLoop() {
     Game.update(myPlayer, otherPlayer);
     Canvas.draw(myPlayer, otherPlayer, boss);
