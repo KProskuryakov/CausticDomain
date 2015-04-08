@@ -1,9 +1,6 @@
 /**
  * Created by Kostya on 4/8/2015.
  */
-/**
- * Created by Kostya on 4/8/2015.
- */
 var Canvas = {};
 
 // The draw loop that draws all game objects on screen
