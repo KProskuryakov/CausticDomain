@@ -11,6 +11,10 @@ app.get('/', function (req, res) {
     res.sendFile(__dirname + '/index.html');
 });
 
+app.get('/bundle.js', function (req, res) {
+    res.sendFile(__dirname + '/bundle.js');
+});
+
 
 
 var Player = function(x, y, num, socket) {
@@ -21,10 +25,6 @@ var Player = function(x, y, num, socket) {
 };
 
 Player.prototype.getStartPacket = function() {
-    return {x: this.x, y: this.y, vel: this.vel, moveDir: this.moveDir, num: this.num};
-};
-
-Player.prototype.getMovePacket = function() {
     return {x: this.x, y: this.y, vel: this.vel, moveDir: this.moveDir, num: this.num};
 };
 
@@ -85,22 +85,25 @@ io.on('connection', function (socket) {
     });
 
     socket.on('moveChange', function(data) {
-        if (data.num == 1) {
-            player1.x = data.x;
-            player1.y = data.y;
-            player1.vel = data.vel;
-            player1.moveDir = data.moveDir;
-            if (player2 != null) {
-                player2.socket.emit('moveChange', player1.getMovePacket());
-            }
-        } else if (data.num == 2) {
-            player2.x = data.x;
-            player2.y = data.y;
-            player2.vel = data.vel;
-            player2.moveDir = data.moveDir;
-            if (player1 != null) {
-                player1.socket.emit('moveChange', player2.getMovePacket());
-            }
-        }
+
+        console.log(data.stuff);
+
+        //if (data.num == 1) {
+        //    if (player2 != null) {
+        //        player2.socket.emit('moveChange', data);
+        //    }
+        //    player1.x = data.x;
+        //    player1.y = data.y;
+        //    player1.vel = data.vel;
+        //    player1.moveDir = data.moveDir;
+        //} else if (data.num == 2) {
+        //    if (player1 != null) {
+        //        player1.socket.emit('moveChange', data);
+        //    }
+        //    player2.x = data.x;
+        //    player2.y = data.y;
+        //    player2.vel = data.vel;
+        //    player2.moveDir = data.moveDir;
+        //}
     })
 });
