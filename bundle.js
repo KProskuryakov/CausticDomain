@@ -33,6 +33,7 @@ module.exports = Boss;
  */
 var Canvas = {};
 
+// The draw loop that draws all game objects on screen
 Canvas.draw = function(myPlayer, otherPlayer, boss) {
     Canvas.ctx.clearRect(0, 0, 800, 600);
 
@@ -46,6 +47,7 @@ Canvas.draw = function(myPlayer, otherPlayer, boss) {
 Canvas.keys = [];
 Canvas.curKeyEvent = -1;
 
+// Callback when any key event occurs during the game
 Canvas.checkKeys = function(e) {
     e = e || event; // to deal with IE
     Canvas.keys[e.keyCode] = e.type == 'keydown';
@@ -116,14 +118,17 @@ Canvas.checkKeys = function(e) {
 };
 
 module.exports = Canvas;
+
 },{}],3:[function(require,module,exports){
 /**
  * Created by Kostya on 4/8/2015.
  */
 var Game = {};
 
+// The time value of the last dt update
 Game.lastUpdate = new Date().getTime();
 
+// The update loop that iterates through all game objects
 Game.update = function (myPlayer, otherPlayer) {
     var dt = (new Date().getTime() - Game.lastUpdate) / 1000;
 
@@ -142,12 +147,13 @@ module.exports = Game;
 // Initialize connection with server
 var socket = io();
 
+// Browserify boilerplate, initializes all instances of module code
 var Game = require("./client_game.js");
 var Canvas = require("./canvas.js");
 var Player = require("./player.js");
 var Boss = require("./boss.js");
 
-
+// TODO create the Skill definition (in another file) and implement
 var Skill = function(x, y, dir, r, cir, castTime, hitsPlayers, hitsEnemies, damage, healing) {
 
 };
@@ -158,10 +164,6 @@ var otherPlayer = new Player(0, 0, 0);
 
 // Declare the boss
 var boss = new Boss(0, 0, 0);
-
-// Declare the namespaces for various functions
-
-
 
 // Called at the beginning to initialize the event listeners on the canvas
 window.onload = function() {
@@ -206,6 +208,7 @@ socket.on('bossUpdate', function (data) {
     boss.health = data.health;
 });
 
+// Updates 60 times a second as well as draws the updated screen
 function updateLoop() {
     Game.update(myPlayer, otherPlayer);
     Canvas.draw(myPlayer, otherPlayer, boss);
