@@ -22,7 +22,7 @@ var Player = function(x, y, num, socket) {
 
 Player.prototype.getStartPacket = function() {
     return {x: this.x, y: this.y, vel: this.vel, moveDir: this.moveDir, num: this.num};
-}
+};
 
 Player.prototype.getMovePacket = function() {
     return {x: this.x, y: this.y, vel: this.vel, moveDir: this.moveDir, num: this.num};
@@ -37,7 +37,7 @@ var Boss = function (x, y, health) {
 
 Boss.prototype.getStartPacket = function() {
     return {x: this.x, y: this.y, health: this.health, maxHealth: this.maxHealth};
-}
+};
 
 Boss.prototype.getBossPacket = function(){
     return {x: this.x, y: this.y, health: this.health};
@@ -59,7 +59,7 @@ Game.update = function () {
 
 };
 
-setInterval(Game.update, 1000 / Game.updatesPerSecond);
+//setInterval(Game.update, 1000 / Game.updatesPerSecond);
 
 
 
