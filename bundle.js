@@ -257,7 +257,7 @@ Player.prototype.update = function(dt) {
         this.x += xinc; this.ix += xinc;
         this.y += yinc; this.iy += yinc;
     }
-    if (Math.abs(this.ix - this.x) < 10 && Math.abs(this.iy - this.y) < 10) {
+    if (Math.abs(this.ix - this.x) < 5 && Math.abs(this.iy - this.y) < 5) {
         this.ix = this.x;
         this.iy = this.y;
         console.log(this.ix + " " + this.iy);
