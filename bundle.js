@@ -234,7 +234,7 @@ function Player(x, y, num, socket) {
     this.x = x; this.y = y;
     this.ix = x; this.iy = y;
     this.vel = 0; this.moveDir = 0;
-    this.ivel = 0; this.idir = 0;
+    this.ivel = 115;
     this.num = num;
     this.socket = socket;
 }
@@ -252,8 +252,19 @@ Player.prototype.getMovePacket = function() {
 // Increments the player's position
 Player.prototype.update = function(dt) {
     if (this.vel != 0) {
-        this.x += Math.cos(this.moveDir) * this.vel * dt;
-        this.y += Math.sin(this.moveDir) * this.vel * dt;
+        var xinc = Math.cos(this.moveDir) * this.vel * dt;
+        var yinc = Math.sin(this.moveDir) * this.vel * dt;
+        this.x += xinc; this.ix += xinc;
+        this.y += yinc; this.iy += yinc;
+    }
+    if (Math.abs(this.ix - this.x) < 10 && Math.abs(this.iy - this.y) < 10) {
+        this.ix = this.x;
+        this.iy = this.y;
+        console.log(this.ix + " " + this.iy);
+    } else {
+        var idir = Math.atan2(this.y - this.iy, this.x - this.ix);
+        this.ix += Math.cos(idir) * this.ivel * dt;
+        this.iy += Math.sin(idir) * this.ivel * dt;
     }
 };
 
@@ -261,7 +272,7 @@ Player.prototype.update = function(dt) {
 Player.prototype.draw = function(ctx) {
     ctx.strokeStyle = "black";
     ctx.beginPath();
-    ctx.arc(this.x, this.y, 10, 0, 2 * Math.PI);
+    ctx.arc(this.ix, this.iy, 10, 0, 2 * Math.PI);
     ctx.stroke();
 };
 
