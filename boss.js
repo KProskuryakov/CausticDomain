@@ -8,6 +8,16 @@ var Boss = function (x, y, health) {
     this.maxHealth = health;
 };
 
+// Server-side send initial boss values to client
+Boss.prototype.getStartPacket = function() {
+    return {x: this.x, y: this.y, health: this.health, maxHealth: this.maxHealth};
+};
+
+// Server-side boss update packet
+Boss.prototype.getBossPacket = function(){
+    return {x: this.x, y: this.y, health: this.health};
+};
+
 // Draws the boss
 Boss.prototype.draw = function(ctx) {
     ctx.strokeStyle = "red";

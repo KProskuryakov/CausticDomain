@@ -15,33 +15,9 @@ app.get('/bundle.js', function (req, res) {
     res.sendFile(__dirname + '/bundle.js');
 });
 
-
-
-var Player = function(x, y, num, socket) {
-    this.x = x; this.y = y;
-    this.vel = 0; this.moveDir = 0;
-    this.num = num;
-    this.socket = socket;
-};
-
-Player.prototype.getStartPacket = function() {
-    return {x: this.x, y: this.y, vel: this.vel, moveDir: this.moveDir, num: this.num};
-};
-
-
-var Boss = function (x, y, health) {
-    this.x = x; this.y = y;
-    this.health = health;
-    this.maxHealth = health;
-};
-
-Boss.prototype.getStartPacket = function() {
-    return {x: this.x, y: this.y, health: this.health, maxHealth: this.maxHealth};
-};
-
-Boss.prototype.getBossPacket = function(){
-    return {x: this.x, y: this.y, health: this.health};
-};
+var Player = require("./player.js");
+var Boss = require("./boss.js");
+var Game = require("./server_game.js");
 
 
 var player1 = null;
@@ -50,14 +26,6 @@ var player2 = null;
 var boss = new Boss(400, 300, 1000);
 
 
-
-var Game = {};
-
-Game.updatesPerSecond = 60;
-
-Game.update = function () {
-
-};
 
 //setInterval(Game.update, 1000 / Game.updatesPerSecond);
 

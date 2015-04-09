@@ -9,6 +9,16 @@ var Boss = function (x, y, health) {
     this.maxHealth = health;
 };
 
+// Server-side send initial boss values to client
+Boss.prototype.getStartPacket = function() {
+    return {x: this.x, y: this.y, health: this.health, maxHealth: this.maxHealth};
+};
+
+// Server-side boss update packet
+Boss.prototype.getBossPacket = function(){
+    return {x: this.x, y: this.y, health: this.health};
+};
+
 // Draws the boss
 Boss.prototype.draw = function(ctx) {
     ctx.strokeStyle = "red";
@@ -220,13 +230,19 @@ setInterval(updateLoop, 1000 / 60);
  * Created by Kostya on 4/8/2015.
  */
 // Represents the human entities in the game
-function Player(x, y, num) {
+function Player(x, y, num, socket) {
     this.x = x; this.y = y;
     this.ix = x; this.iy = y;
     this.vel = 0; this.moveDir = 0;
     this.ivel = 0; this.idir = 0;
     this.num = num;
+    this.socket = socket;
 }
+
+// Server-side for the player to send initial position to new connector
+Player.prototype.getStartPacket = function() {
+    return {x: this.x, y: this.y, vel: this.vel, moveDir: this.moveDir, num: this.num};
+};
 
 // Constructs an update packet that contains the location and velocity of the player
 Player.prototype.getMovePacket = function() {
