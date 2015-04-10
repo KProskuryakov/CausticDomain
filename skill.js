@@ -45,10 +45,10 @@ Skill.prototype.clientUpdate = function(dt, myPlayer, boss) {
         console.log(this.cir);
 
         if (pDist && pAngle <= this.cir / 2 && pAngle >= this.cir / -2) {
-            myPlayer.health = Math.min(myPlayer.maxHealth, myPlayer.health - this.aDamage + this.aHealing);
+            myPlayer.health = Math.max(Math.min(myPlayer.maxHealth, myPlayer.health - this.aDamage + this.aHealing), 0);
         }
         if (bDist && bAngle <= this.cir / 2 && bAngle >= this.cir / -2) {
-            boss.health = Math.min(boss.maxHealth, boss.health - this.eDamage + this.eHealing);
+            boss.health = Math.max(Math.min(boss.maxHealth, boss.health - this.eDamage + this.eHealing), 0);
         }
     }
 };

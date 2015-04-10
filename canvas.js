@@ -7,16 +7,15 @@ var Canvas = {};
 Canvas.draw = function(myPlayer, otherPlayer, boss) {
     Canvas.ctx.clearRect(0, 0, 800, 600);
 
+    boss.draw(Canvas.ctx);
+    myPlayer.draw(Canvas.ctx);
+    otherPlayer.draw(Canvas.ctx);
+
+    boss.drawHealth(Canvas.ctx);
+
     for (var i = 0; i < Canvas.Game.skillsAlive.length; i++) {
         Canvas.Game.skillsAlive[i].draw(Canvas.ctx);
     }
-
-
-    myPlayer.draw(Canvas.ctx);
-    otherPlayer.draw(Canvas.ctx);
-    boss.draw(Canvas.ctx);
-
-    boss.drawHealth(Canvas.ctx);
 };
 
 Canvas.doClick = function(e) {

@@ -48,16 +48,15 @@ var Canvas = {};
 Canvas.draw = function(myPlayer, otherPlayer, boss) {
     Canvas.ctx.clearRect(0, 0, 800, 600);
 
+    boss.draw(Canvas.ctx);
+    myPlayer.draw(Canvas.ctx);
+    otherPlayer.draw(Canvas.ctx);
+
+    boss.drawHealth(Canvas.ctx);
+
     for (var i = 0; i < Canvas.Game.skillsAlive.length; i++) {
         Canvas.Game.skillsAlive[i].draw(Canvas.ctx);
     }
-
-
-    myPlayer.draw(Canvas.ctx);
-    otherPlayer.draw(Canvas.ctx);
-    boss.draw(Canvas.ctx);
-
-    boss.drawHealth(Canvas.ctx);
 };
 
 Canvas.doClick = function(e) {
@@ -376,10 +375,10 @@ Skill.prototype.clientUpdate = function(dt, myPlayer, boss) {
         console.log(this.cir);
 
         if (pDist && pAngle <= this.cir / 2 && pAngle >= this.cir / -2) {
-            myPlayer.health = Math.min(myPlayer.maxHealth, myPlayer.health - this.aDamage + this.aHealing);
+            myPlayer.health = Math.max(Math.min(myPlayer.maxHealth, myPlayer.health - this.aDamage + this.aHealing), 0);
         }
         if (bDist && bAngle <= this.cir / 2 && bAngle >= this.cir / -2) {
-            boss.health = Math.min(boss.maxHealth, boss.health - this.eDamage + this.eHealing);
+            boss.health = Math.max(Math.min(boss.maxHealth, boss.health - this.eDamage + this.eHealing), 0);
         }
     }
 };
