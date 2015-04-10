@@ -13,6 +13,8 @@ function Player(x, y, r, maxHealth, num, socket) {
 
     this.health = maxHealth;
     this.maxHealth = maxHealth;
+
+    this.isCasting = false;
 }
 
 // Server-side for the player to send initial position to new connector
@@ -27,6 +29,10 @@ Player.prototype.getMovePacket = function() {
 
 // Increments the player's position
 Player.prototype.update = function(dt) {
+    //if (this.isCasting) {
+    //    this.vel = 0;
+    //    return;
+    //}
     if (this.vel != 0) {
         var xinc = Math.cos(this.moveDir) * this.vel * dt;
         var yinc = Math.sin(this.moveDir) * this.vel * dt;

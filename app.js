@@ -34,23 +34,12 @@ var boss = new Boss(400, 300, 50, 1000);
 io.on('connection', function (socket) {
     console.log("New connection on port 8080.");
     if (player1 == null) {
-        player1 = new Player(0, 0, 10, 1, socket);
+        player1 = new Player(0, 0, 10, 100, 1, socket);
         socket.emit("start", {num: 1, boss: boss.getStartPacket()});
     } else if (player2 == null) {
-        player2 = new Player(0, 0, 10, 2, socket);
+        player2 = new Player(0, 0, 10, 100, 2, socket);
         socket.emit("start", {num: 2, boss: boss.getStartPacket(), player: player1.getStartPacket()});
     }
-
-    socket.on('update', function(data) {
-        console.log("Update!");
-        if (data.num == 1) {
-            player1.x = data.x;
-            player1.y = data.y;
-        } else if (data.num == 2) {
-            player2.x = data.x;
-            player2.y = data.y;
-        }
-    });
 
     socket.on('moveChange', function(data) {
         if (data.num == 1) {

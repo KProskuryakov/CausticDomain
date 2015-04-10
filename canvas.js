@@ -24,6 +24,7 @@ Canvas.doClick = function(e) {
     var posY = e.pageY - offset.y;     //find the y position of the mouse
 
     //e.target.myPlayer.cast(posX, posY);
+
     Canvas.Game.cast(e.target.myPlayer.x, e.target.myPlayer.y, posX, posY);
 };
 
@@ -43,6 +44,7 @@ Canvas.findOffset = function(obj) {
 Canvas.keys = [];
 Canvas.curKeyEvent = -1;
 
+// TODO replace all inner if-statements with a single function
 // Callback when any key event occurs during the game
 Canvas.checkKeys = function(e) {
     e = e || event; // to deal with IE
