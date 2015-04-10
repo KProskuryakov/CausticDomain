@@ -33,11 +33,17 @@ socket.on('loginSuccess', function (data) {
 });
 
 // Server rejects client login
-socket.on('loginFailed', function () {});
+socket.on('loginFailed', function () {
+    console.log("Login Failed!");
+});
 
 // A change in another player's movement was detected and sent
 socket.on('moveChange', function (data) {
     Game.moveChange(data);
+});
+
+socket.on('playerConnect', function (data) {
+    Game.initPlayer(data);
 });
 
 // A player disconnected!

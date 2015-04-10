@@ -22,11 +22,16 @@ Game.initMyPlayer = function(packet, socket) {
     Game.myPlayer = new Game.Player(packet.x, packet.y, 10, 100, socket, packet.name);
 };
 
+Game.initPlayer = function (packet) {
+    var newPlayer = new Game.Player(packet.x, packet.y, 10, 100, null, packet.name);
+    newPlayer.vel = packet.vel;
+    newPlayer.moveDir = packet.moveDir;
+    Game.players.push(newPlayer);
+};
+
 Game.initPlayers = function(playerData) {
     for (var i = 0; i < playerData.length; i++) {
-        Game.players.push(new Player(playerData[i].x, playerData[i].y, 10, 100, null, playerData[i].name));
-        Game.players[i].vel = playerData[i].vel;
-        Game.players[i].moveDir = playerData[i].moveDir;
+        Game.initPlayer(playerData[i]);
     }
 };
 

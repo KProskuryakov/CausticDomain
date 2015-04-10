@@ -25,8 +25,10 @@ io.on('connection', function (socket) {
 
     socket.on('login', function(data) {
         if (Game.nameExists(data.name)) {
+            console.log("Login Failed! " + data.name);
             socket.emit('loginFailed');
         } else {
+            console.log("Woah login! " + data.name);
             state = "loggedIn";
             var playerData = [];
             for (var i = 0; i < Game.players.length; i++) {
@@ -34,7 +36,7 @@ io.on('connection', function (socket) {
             }
             player = Game.addPlayer(data.name, socket);
             socket.emit('loginSuccess', {playerData: playerData, player: player.getStartPacket()});
-            socket.broadcast.emit('newPlayer', player.getStartPacket());
+            socket.broadcast.emit('playerConnect', player.getStartPacket());
         }
     });
 

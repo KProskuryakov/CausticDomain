@@ -151,15 +151,17 @@ Canvas.menuScreen.prototype.checkKeys = function(e) {
                 if (this.name.length > 0) {
                     this.name = this.name.slice(0, this.name.length - 1);
                 }
+                e.preventDefault();
                 break;
             case 13:
-                    Canvas.socket.emit('login', this.name);
+                    Canvas.socket.emit('login', {name: this.name});
                 break;
             default:
                 this.name += String.fromCharCode(e.keyCode);
                 break;
         }
     }
+    return false;
 };
 
 Canvas.doClick = function(e) {
@@ -226,11 +228,16 @@ Game.initMyPlayer = function(packet, socket) {
     Game.myPlayer = new Game.Player(packet.x, packet.y, 10, 100, socket, packet.name);
 };
 
+Game.initPlayer = function (packet) {
+    var newPlayer = new Game.Player(packet.x, packet.y, 10, 100, null, packet.name);
+    newPlayer.vel = packet.vel;
+    newPlayer.moveDir = packet.moveDir;
+    Game.players.push(newPlayer);
+};
+
 Game.initPlayers = function(playerData) {
     for (var i = 0; i < playerData.length; i++) {
-        Game.players.push(new Player(playerData[i].x, playerData[i].y, 10, 100, null, playerData[i].name));
-        Game.players[i].vel = playerData[i].vel;
-        Game.players[i].moveDir = playerData[i].moveDir;
+        Game.initPlayer(playerData[i]);
     }
 };
 
@@ -336,11 +343,17 @@ socket.on('loginSuccess', function (data) {
 });
 
 // Server rejects client login
-socket.on('loginFailed', function () {});
+socket.on('loginFailed', function () {
+    console.log("Login Failed!");
+});
 
 // A change in another player's movement was detected and sent
 socket.on('moveChange', function (data) {
     Game.moveChange(data);
+});
+
+socket.on('playerConnect', function (data) {
+    Game.initPlayer(data);
 });
 
 // A player disconnected!
@@ -386,7 +399,6 @@ Player.prototype.getMovePacket = function() {
 
 // Increments the player's position
 Player.prototype.update = function(dt) {
-    console.log("Woo updating!");
     //if (this.isCasting) {
     //    this.vel = 0;
     //    return;

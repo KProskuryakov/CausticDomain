@@ -110,23 +110,23 @@ Canvas.menuScreen.prototype.checkKeys = function(e) {
                 if (this.name.length > 0) {
                     this.name = this.name.slice(0, this.name.length - 1);
                 }
+                e.preventDefault();
                 break;
             case 13:
-                    Canvas.socket.emit('login', this.name);
+                    Canvas.socket.emit('login', {name: this.name});
                 break;
             default:
                 this.name += String.fromCharCode(e.keyCode);
                 break;
         }
     }
+    return false;
 };
 
 Canvas.doClick = function(e) {
     var offset = Canvas.findOffset(Canvas.canvas);
     var posX = e.pageX - offset.x;     //find the x position of the mouse
     var posY = e.pageY - offset.y;     //find the y position of the mouse
-
-    //Canvas.Game.myPlayer.cast(posX, posY);
 
     //Canvas.Game.cast(Canvas.Game.myPlayer.x, Canvas.Game.myPlayer.y, posX, posY);
 };
