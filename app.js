@@ -15,49 +15,41 @@ app.get('/bundle.js', function (req, res) {
     res.sendFile(__dirname + '/bundle.js');
 });
 
-var Player = require("./player.js");
-var Boss = require("./boss.js");
+
 var Game = require("./server_game.js");
 
 
-var player1 = null;
-var player2 = null;
-
-var boss = new Boss(400, 300, 50, 1000);
-
-
-
-//setInterval(Game.update, 1000 / Game.updatesPerSecond);
-
-
-
 io.on('connection', function (socket) {
-    console.log("New connection on port 8080.");
-    if (player1 == null) {
-        player1 = new Player(0, 0, 10, 100, 1, socket);
-        socket.emit("start", {num: 1, boss: boss.getStartPacket()});
-    } else if (player2 == null) {
-        player2 = new Player(0, 0, 10, 100, 2, socket);
-        socket.emit("start", {num: 2, boss: boss.getStartPacket(), player: player1.getStartPacket()});
-    }
+    var state = "connected";
+    var player = null;
+
+    socket.on('login', function(data) {
+        if (Game.nameExists(data.name)) {
+            socket.emit('loginFailed');
+        } else {
+            state = "loggedIn";
+            var playerData = [];
+            for (var i = 0; i < Game.players.length; i++) {
+                playerData.push(Game.players[i].getStartPacket());
+            }
+            player = Game.addPlayer(data.name, socket);
+            socket.emit('loginSuccess', {playerData: playerData, player: player.getStartPacket()});
+            socket.broadcast.emit('newPlayer', player.getStartPacket());
+        }
+    });
+
+    socket.on('disconnect', function() {
+        if (state == "loggedIn") {
+            socket.broadcast.emit('playerDisconnected', {name: player.name});
+            Game.removePlayer(player);
+        }
+    });
 
     socket.on('moveChange', function(data) {
-        if (data.num == 1) {
-            if (player2 != null) {
-                player2.socket.emit('moveChange', data);
-            }
-            player1.x = data.x;
-            player1.y = data.y;
-            player1.vel = data.vel;
-            player1.moveDir = data.moveDir;
-        } else if (data.num == 2) {
-            if (player1 != null) {
-                player1.socket.emit('moveChange', data);
-            }
-            player2.x = data.x;
-            player2.y = data.y;
-            player2.vel = data.vel;
-            player2.moveDir = data.moveDir;
-        }
-    })
+        socket.broadcast.emit('moveChange', data);
+        player.x = data.x;
+        player.y = data.y;
+        player.vel = data.vel;
+        player.moveDir = data.moveDir;
+    });
 });

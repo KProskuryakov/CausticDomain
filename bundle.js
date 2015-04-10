@@ -44,18 +44,121 @@ module.exports = Boss;
  */
 var Canvas = {};
 
+Canvas.gameScreen = function() {};
+
+Canvas.menuScreen = function() {
+    this.name = "";
+};
+
+Canvas.screen = new Canvas.menuScreen();
+
 // The draw loop that draws all game objects on screen
-Canvas.draw = function(myPlayer, otherPlayer, boss) {
+Canvas.draw = function() {
     Canvas.ctx.clearRect(0, 0, 800, 600);
+    Canvas.screen.draw();
+};
 
-    boss.draw(Canvas.ctx);
-    myPlayer.draw(Canvas.ctx);
-    otherPlayer.draw(Canvas.ctx);
-
-    boss.drawHealth(Canvas.ctx);
-
+Canvas.gameScreen.prototype.draw = function() {
     for (var i = 0; i < Canvas.Game.skillsAlive.length; i++) {
         Canvas.Game.skillsAlive[i].draw(Canvas.ctx);
+    }
+
+    for (var j = 0; i < Canvas.Game.players.length; i++) {
+        Canvas.Game.players[i].draw(Canvas.ctx);
+    }
+
+    Canvas.Game.myPlayer.draw(Canvas.ctx);
+};
+
+Canvas.menuScreen.prototype.draw = function() {
+    Canvas.ctx.font = "30px Arial";
+    Canvas.ctx.fillText("Input your name, then press enter!", 200, 100);
+    Canvas.ctx.fillText("" + this.name, 200, 200);
+};
+
+Canvas.gameScreen.prototype.checkKeys = function(e) {
+    Canvas.keys[e.keyCode] = e.type == 'keydown';
+    if (Canvas.keys[87] && Canvas.keys[83] || Canvas.keys[65] && Canvas.keys[68] || !Canvas.keys[87] && !Canvas.keys[83] && !Canvas.keys[65] && !Canvas.keys[68]) {
+        Canvas.Game.myPlayer.vel = 0;
+        if (Canvas.curKeyEvent != 0) {
+            Canvas.curKeyEvent = 0;
+            Canvas.socket.emit("moveChange", Canvas.Game.myPlayer.getMovePacket());
+        }
+    } else if (Canvas.keys[87] && Canvas.keys[65]) {
+        Canvas.Game.myPlayer.moveDir = -3 * Math.PI / 4;
+        Canvas.Game.myPlayer.vel = 100;
+        if (Canvas.curKeyEvent != 1) {
+            Canvas.curKeyEvent = 1;
+            Canvas.socket.emit("moveChange", Canvas.Game.myPlayer.getMovePacket());
+        }
+    } else if (Canvas.keys[87] && Canvas.keys[68]) {
+        Canvas.Game.myPlayer.moveDir = -Math.PI / 4;
+        Canvas.Game.myPlayer.vel = 100;
+        if (Canvas.curKeyEvent != 2) {
+            Canvas.curKeyEvent = 2;
+            Canvas.socket.emit("moveChange", Canvas.Game.myPlayer.getMovePacket());
+        }
+    } else if (Canvas.keys[83] && Canvas.keys[65]) {
+        Canvas.Game.myPlayer.moveDir = 3 * Math.PI / 4;
+        Canvas.Game.myPlayer.vel = 100;
+        if (Canvas.curKeyEvent != 3) {
+            Canvas.curKeyEvent = 3;
+            Canvas.socket.emit("moveChange", Canvas.Game.myPlayer.getMovePacket());
+        }
+    } else if (Canvas.keys[83] && Canvas.keys[68]) {
+        Canvas.Game.myPlayer.moveDir = Math.PI / 4;
+        Canvas.Game.myPlayer.vel = 100;
+        if (Canvas.curKeyEvent != 4) {
+            Canvas.curKeyEvent = 4;
+            Canvas.socket.emit("moveChange", Canvas.Game.myPlayer.getMovePacket());
+        }
+    } else if (Canvas.keys[87]) {
+        Canvas.Game.myPlayer.moveDir = -Math.PI / 2;
+        Canvas.Game.myPlayer.vel = 100;
+        if (Canvas.curKeyEvent != 5) {
+            Canvas.curKeyEvent = 5;
+            Canvas.socket.emit("moveChange", Canvas.Game.myPlayer.getMovePacket());
+        }
+    } else if (Canvas.keys[83]) {
+        Canvas.Game.myPlayer.moveDir = Math.PI / 2;
+        Canvas.Game.myPlayer.vel = 100;
+        if (Canvas.curKeyEvent != 6) {
+            Canvas.curKeyEvent = 6;
+            Canvas.socket.emit("moveChange", Canvas.Game.myPlayer.getMovePacket());
+        }
+    } else if (Canvas.keys[65]) {
+        Canvas.Game.myPlayer.moveDir = Math.PI;
+        Canvas.Game.myPlayer.vel = 100;
+        if (Canvas.curKeyEvent != 7) {
+            Canvas.curKeyEvent = 7;
+            Canvas.socket.emit("moveChange", Canvas.Game.myPlayer.getMovePacket());
+        }
+    } else if (Canvas.keys[68]) {
+        Canvas.Game.myPlayer.moveDir = 0;
+        Canvas.Game.myPlayer.vel = 100;
+        if (Canvas.curKeyEvent != 8) {
+            Canvas.curKeyEvent = 8;
+            Canvas.socket.emit("moveChange", Canvas.Game.myPlayer.getMovePacket());
+        }
+    }
+    return false;
+};
+
+Canvas.menuScreen.prototype.checkKeys = function(e) {
+    if (e.type == "keydown") {
+        switch (e.keyCode) {
+            case 8:
+                if (this.name.length > 0) {
+                    this.name = this.name.slice(0, this.name.length - 1);
+                }
+                break;
+            case 13:
+                    Canvas.socket.emit('login', this.name);
+                break;
+            default:
+                this.name += String.fromCharCode(e.keyCode);
+                break;
+        }
     }
 };
 
@@ -64,8 +167,9 @@ Canvas.doClick = function(e) {
     var posX = e.pageX - offset.x;     //find the x position of the mouse
     var posY = e.pageY - offset.y;     //find the y position of the mouse
 
-    //e.target.myPlayer.cast(posX, posY);
-    Canvas.Game.cast(e.target.myPlayer.x, e.target.myPlayer.y, posX, posY);
+    //Canvas.Game.myPlayer.cast(posX, posY);
+
+    //Canvas.Game.cast(Canvas.Game.myPlayer.x, Canvas.Game.myPlayer.y, posX, posY);
 };
 
 Canvas.findOffset = function(obj) {
@@ -84,74 +188,15 @@ Canvas.findOffset = function(obj) {
 Canvas.keys = [];
 Canvas.curKeyEvent = -1;
 
+// TODO replace all inner if-statements with a single function
 // Callback when any key event occurs during the game
 Canvas.checkKeys = function(e) {
     e = e || event; // to deal with IE
-    Canvas.keys[e.keyCode] = e.type == 'keydown';
-    if (Canvas.keys[87] && Canvas.keys[83] || Canvas.keys[65] && Canvas.keys[68] || !Canvas.keys[87] && !Canvas.keys[83] && !Canvas.keys[65] && !Canvas.keys[68]) {
-        e.target.myPlayer.vel = 0;
-        if (Canvas.curKeyEvent != 0) {
-            Canvas.curKeyEvent = 0;
-            e.target.socket.emit("moveChange", e.target.myPlayer.getMovePacket());
-        }
-    } else if (Canvas.keys[87] && Canvas.keys[65]) {
-        e.target.myPlayer.moveDir = -3 * Math.PI / 4;
-        e.target.myPlayer.vel = 100;
-        if (Canvas.curKeyEvent != 1) {
-            Canvas.curKeyEvent = 1;
-            e.target.socket.emit("moveChange", e.target.myPlayer.getMovePacket());
-        }
-    } else if (Canvas.keys[87] && Canvas.keys[68]) {
-        e.target.myPlayer.moveDir = -Math.PI / 4;
-        e.target.myPlayer.vel = 100;
-        if (Canvas.curKeyEvent != 2) {
-            Canvas.curKeyEvent = 2;
-            e.target.socket.emit("moveChange", e.target.myPlayer.getMovePacket());
-        }
-    } else if (Canvas.keys[83] && Canvas.keys[65]) {
-        e.target.myPlayer.moveDir = 3 * Math.PI / 4;
-        e.target.myPlayer.vel = 100;
-        if (Canvas.curKeyEvent != 3) {
-            Canvas.curKeyEvent = 3;
-            e.target.socket.emit("moveChange", e.target.myPlayer.getMovePacket());
-        }
-    } else if (Canvas.keys[83] && Canvas.keys[68]) {
-        e.target.myPlayer.moveDir = Math.PI / 4;
-        e.target.myPlayer.vel = 100;
-        if (Canvas.curKeyEvent != 4) {
-            Canvas.curKeyEvent = 4;
-            e.target.socket.emit("moveChange", e.target.myPlayer.getMovePacket());
-        }
-    } else if (Canvas.keys[87]) {
-        e.target.myPlayer.moveDir = -Math.PI / 2;
-        e.target.myPlayer.vel = 100;
-        if (Canvas.curKeyEvent != 5) {
-            Canvas.curKeyEvent = 5;
-            e.target.socket.emit("moveChange", e.target.myPlayer.getMovePacket());
-        }
-    } else if (Canvas.keys[83]) {
-        e.target.myPlayer.moveDir = Math.PI / 2;
-        e.target.myPlayer.vel = 100;
-        if (Canvas.curKeyEvent != 6) {
-            Canvas.curKeyEvent = 6;
-            e.target.socket.emit("moveChange", e.target.myPlayer.getMovePacket());
-        }
-    } else if (Canvas.keys[65]) {
-        e.target.myPlayer.moveDir = Math.PI;
-        e.target.myPlayer.vel = 100;
-        if (Canvas.curKeyEvent != 7) {
-            Canvas.curKeyEvent = 7;
-            e.target.socket.emit("moveChange", e.target.myPlayer.getMovePacket());
-        }
-    } else if (Canvas.keys[68]) {
-        e.target.myPlayer.moveDir = 0;
-        e.target.myPlayer.vel = 100;
-        if (Canvas.curKeyEvent != 8) {
-            Canvas.curKeyEvent = 8;
-            e.target.socket.emit("moveChange", e.target.myPlayer.getMovePacket());
-        }
-    }
-    return false;
+    Canvas.screen.checkKeys(e);
+};
+
+Canvas.keyType = function(e) {
+    Canvas.screen.keyType(e);
 };
 
 module.exports = Canvas;
@@ -162,27 +207,88 @@ module.exports = Canvas;
  */
 var Game = {};
 
+Game.Player = require("./player.js");
+Game.Boss = require("./boss.js");
+Game.Skill = require("./skill.js");
+
+Game.state = "notLoggedIn"; // Possible states: notLoggedIn, loggedIn
+
+
 // The time value of the last dt update
 Game.lastUpdate = new Date().getTime();
 
+Game.myPlayer = null;
+Game.players = [];
+
 Game.skillsAlive = [];
 
-// The update loop that iterates through all game objects
-Game.update = function (myPlayer, otherPlayer, boss) {
-    var dt = (new Date().getTime() - Game.lastUpdate) / 1000;
+Game.initMyPlayer = function(packet, socket) {
+    Game.myPlayer = new Game.Player(packet.x, packet.y, 10, 100, socket, packet.name);
+};
 
-    myPlayer.update(dt);
-    otherPlayer.update(dt);
+Game.initPlayers = function(playerData) {
+    for (var i = 0; i < playerData.length; i++) {
+        Game.players.push(new Player(playerData[i].x, playerData[i].y, 10, 100, null, playerData[i].name));
+        Game.players[i].vel = playerData[i].vel;
+        Game.players[i].moveDir = playerData[i].moveDir;
+    }
+};
 
-    for (var i = 0; i < Game.skillsAlive.length; i++) {
-        var cur = Game.skillsAlive[i];
-        if (cur.dead) {
-            Game.skillsAlive.splice(i, 1);
-            i--;
-        } else {
-            cur.clientUpdate(dt, myPlayer, boss);
+Game.moveChange = function(data) {
+    if (Game.state == "loggedIn") {
+        var player = Game.getPlayer(data.name);
+        player.x = data.x;
+        player.y = data.y;
+        player.vel = data.vel;
+        player.moveDir = data.moveDir;
+    }
+};
+
+Game.removePlayer = function(name) {
+    for (var i = 0; i < Game.players.length; i++) {
+        if (Game.players[i].name == name) {
+            Game.players.splice(i, 1);
         }
     }
+};
+
+Game.getPlayer = function(name) {
+    for (var i = 0; i < Game.players.length; i++) {
+        if (Game.players[i].name == name) {
+            return Game.players[i];
+        }
+    }
+};
+
+Game.changeState = function(newState) {
+    switch(newState) {
+        case "loggedIn":
+            Game.state = newState;
+            Game.Canvas.screen = new Game.Canvas.gameScreen();
+            break;
+    }
+};
+
+// The update loop that iterates through all game objects
+Game.update = function () {
+    var dt = (new Date().getTime() - Game.lastUpdate) / 1000;
+
+    if (Game.state == "loggedIn") {
+        Game.myPlayer.update(dt);
+        for (var i = 0; i < Game.players.length; i++) {
+            Game.players[i].update(dt);
+        }
+    }
+
+    //for (var i = 0; i < Game.skillsAlive.length; i++) {
+    //    var cur = Game.skillsAlive[i];
+    //    if (cur.dead) {
+    //        Game.skillsAlive.splice(i, 1);
+    //        i--;
+    //    } else {
+    //        cur.clientUpdate(dt, myPlayer, boss); // TODO fix skill update code
+    //    }
+    //}
 
     Game.lastUpdate = new Date().getTime();
 };
@@ -194,7 +300,7 @@ Game.cast = function(x, y, posX, posY) {
 };
 
 module.exports = Game;
-},{}],4:[function(require,module,exports){
+},{"./boss.js":1,"./player.js":5,"./skill.js":6}],4:[function(require,module,exports){
 /**
  * Created by Kostya on 4/8/2015.
  * browserify index.js > bundle.js
@@ -205,20 +311,10 @@ var socket = io();
 // Browserify boilerplate, initializes all instances of module code
 var Game = require("./client_game.js");
 var Canvas = require("./canvas.js");
-var Player = require("./player.js");
-var Boss = require("./boss.js");
-var Skill = require("./skill.js");
 
 Canvas.Game = Game;
-Game.Skill = Skill;
+Game.Canvas = Canvas;
 
-
-// Declare and initialize the players
-var myPlayer = new Player(0, 0, 10, 0, 0);
-var otherPlayer = new Player(0, 0, 10, 0, 0);
-
-// Declare the boss
-var boss = new Boss(0, 0, 50, 0);
 
 // Called at the beginning to initialize the event listeners on the canvas
 window.onload = function() {
@@ -228,63 +324,51 @@ window.onload = function() {
     canvas.addEventListener('keydown', Canvas.checkKeys, true);
     canvas.addEventListener('keyup', Canvas.checkKeys, true);
     canvas.addEventListener('click', Canvas.doClick, false);
-    canvas.myPlayer = myPlayer;
-    canvas.socket = socket;
+    Canvas.socket = socket;
 };
 
 
-// Server sends client data upon first connecting
-socket.on('start', function (data) {
-    myPlayer.num = data.num;
-
-    if (data.player != null) {
-        otherPlayer.x = data.player.x;
-        otherPlayer.y = data.player.y;
-        otherPlayer.vel = data.player.vel;
-        otherPlayer.moveDir = data.player.moveDir;
-    }
-
-    boss.x = data.boss.x;
-    boss.y = data.boss.y;
-    boss.health = data.boss.health;
-    boss.maxHealth = data.boss.maxHealth;
+// Server sends client data upon login
+socket.on('loginSuccess', function (data) {
+    Game.initMyPlayer(data.player, socket);
+    Game.initPlayers(data.playerData);
+    Game.changeState("loggedIn");
 });
+
+// Server rejects client login
+socket.on('loginFailed', function () {});
 
 // A change in another player's movement was detected and sent
 socket.on('moveChange', function (data) {
-    otherPlayer.x = data.x;
-    otherPlayer.y = data.y;
-    otherPlayer.vel = data.vel;
-    otherPlayer.moveDir = data.moveDir;
+    Game.moveChange(data);
 });
 
-// A change in the boss was sent
-socket.on('bossUpdate', function (data) {
-    boss.x = data.x;
-    boss.y = data.y;
-    boss.health = data.health;
+// A player disconnected!
+socket.on('playerDisconnect', function (data) {
+    Game.removePlayer(data.name);
 });
 
 // Updates 60 times a second as well as draws the updated screen
 function updateLoop() {
-    Game.update(myPlayer, otherPlayer, boss);
-    Canvas.draw(myPlayer, otherPlayer, boss);
+    Game.update();
+    Canvas.draw();
 }
 
 setInterval(updateLoop, 1000 / 60);
-},{"./boss.js":1,"./canvas.js":2,"./client_game.js":3,"./player.js":5,"./skill.js":6}],5:[function(require,module,exports){
+},{"./canvas.js":2,"./client_game.js":3}],5:[function(require,module,exports){
 /**
  * Created by Kostya on 4/8/2015.
  */
 // Represents the human entities in the game
-function Player(x, y, r, maxHealth, num, socket) {
+function Player(x, y, r, maxHealth, socket, name) {
     this.x = x; this.y = y;
     this.ix = x; this.iy = y;
     this.r = r;
     this.vel = 0; this.moveDir = 0;
     this.ivel = 115;
-    this.num = num;
+
     this.socket = socket;
+    this.name = name;
 
     this.health = maxHealth;
     this.maxHealth = maxHealth;
@@ -292,16 +376,21 @@ function Player(x, y, r, maxHealth, num, socket) {
 
 // Server-side for the player to send initial position to new connector
 Player.prototype.getStartPacket = function() {
-    return {x: this.x, y: this.y, vel: this.vel, moveDir: this.moveDir, num: this.num};
+    return {x: this.x, y: this.y, vel: this.vel, moveDir: this.moveDir, name: this.name};
 };
 
 // Constructs an update packet that contains the location and velocity of the player
 Player.prototype.getMovePacket = function() {
-    return {x: this.x, y: this.y, vel: this.vel, moveDir: this.moveDir, num: this.num};
+    return {x: this.x, y: this.y, vel: this.vel, moveDir: this.moveDir, name: this.name};
 };
 
 // Increments the player's position
 Player.prototype.update = function(dt) {
+    console.log("Woo updating!");
+    //if (this.isCasting) {
+    //    this.vel = 0;
+    //    return;
+    //}
     if (this.vel != 0) {
         var xinc = Math.cos(this.moveDir) * this.vel * dt;
         var yinc = Math.sin(this.moveDir) * this.vel * dt;

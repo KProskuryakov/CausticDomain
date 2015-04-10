@@ -2,29 +2,28 @@
  * Created by Kostya on 4/8/2015.
  */
 // Represents the human entities in the game
-function Player(x, y, r, maxHealth, num, socket) {
+function Player(x, y, r, maxHealth, socket, name) {
     this.x = x; this.y = y;
     this.ix = x; this.iy = y;
     this.r = r;
     this.vel = 0; this.moveDir = 0;
     this.ivel = 115;
-    this.num = num;
+
     this.socket = socket;
+    this.name = name;
 
     this.health = maxHealth;
     this.maxHealth = maxHealth;
-
-    this.isCasting = false;
 }
 
 // Server-side for the player to send initial position to new connector
 Player.prototype.getStartPacket = function() {
-    return {x: this.x, y: this.y, vel: this.vel, moveDir: this.moveDir, num: this.num};
+    return {x: this.x, y: this.y, vel: this.vel, moveDir: this.moveDir, name: this.name};
 };
 
 // Constructs an update packet that contains the location and velocity of the player
 Player.prototype.getMovePacket = function() {
-    return {x: this.x, y: this.y, vel: this.vel, moveDir: this.moveDir, num: this.num};
+    return {x: this.x, y: this.y, vel: this.vel, moveDir: this.moveDir, name: this.name};
 };
 
 // Increments the player's position
