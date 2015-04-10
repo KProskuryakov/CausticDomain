@@ -2,21 +2,18 @@
  * Created by Kostya on 4/8/2015.
  */
 // Represents the human entities in the game
-function Player(x, y, num, socket) {
+function Player(x, y, r, maxHealth, num, socket) {
     this.x = x; this.y = y;
     this.ix = x; this.iy = y;
+    this.r = r;
     this.vel = 0; this.moveDir = 0;
     this.ivel = 115;
     this.num = num;
     this.socket = socket;
-    this.skillsAlive = [];
+
+    this.health = maxHealth;
+    this.maxHealth = maxHealth;
 }
-
-Player.prototype.cast = function(posX, posY) {
-    var sDir = Math.atan2(posY - this.y, posX - this.x);
-
-    this.skillsAlive.push(new Player.Skill(this.x, this.y, sDir, 60, Math.PI / 2, 2.5, 0, 0, 0, 0, "green"));
-};
 
 // Server-side for the player to send initial position to new connector
 Player.prototype.getStartPacket = function() {
@@ -39,33 +36,18 @@ Player.prototype.update = function(dt) {
     if (Math.abs(this.ix - this.x) < 5 && Math.abs(this.iy - this.y) < 5) {
         this.ix = this.x;
         this.iy = this.y;
-        console.log(this.ix + " " + this.iy);
     } else {
         var idir = Math.atan2(this.y - this.iy, this.x - this.ix);
         this.ix += Math.cos(idir) * this.ivel * dt;
         this.iy += Math.sin(idir) * this.ivel * dt;
     }
-
-    for (var i = 0; i < this.skillsAlive.length; i++) {
-        var cur = this.skillsAlive[i];
-        if (cur.dead) {
-            this.skillsAlive.splice(i, 1);
-            i--;
-        } else {
-            cur.update(dt);
-        }
-    }
 };
 
 // Draws the player on the canvas' context
 Player.prototype.draw = function(ctx) {
-    for (var i = 0; i < this.skillsAlive.length; i++) {
-        this.skillsAlive[i].draw(ctx);
-    }
-
     ctx.fillStyle = "black";
     ctx.beginPath();
-    ctx.arc(this.ix, this.iy, 10, 0, 2 * Math.PI);
+    ctx.arc(this.ix, this.iy, this.r, 0, 2 * Math.PI);
     ctx.fill();
 };
 

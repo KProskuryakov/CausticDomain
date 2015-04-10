@@ -3,8 +3,9 @@
  * Created by Kostya on 4/8/2015.
  */
 // Represents the boss entities in the game
-var Boss = function (x, y, health) {
+var Boss = function (x, y, r, health) {
     this.x = x; this.y = y;
+    this.r = r;
     this.health = health;
     this.maxHealth = health;
 };
@@ -21,10 +22,10 @@ Boss.prototype.getBossPacket = function(){
 
 // Draws the boss
 Boss.prototype.draw = function(ctx) {
-    ctx.strokeStyle = "red";
+    ctx.fillStyle = "red";
     ctx.beginPath();
-    ctx.arc(this.x, this.y, 30, 0, 2 * Math.PI);
-    ctx.stroke();
+    ctx.arc(this.x, this.y, this.r, 0, 2 * Math.PI);
+    ctx.fill();
 };
 
 // Draws the bosses health bar at the top of the screen
@@ -47,6 +48,11 @@ var Canvas = {};
 Canvas.draw = function(myPlayer, otherPlayer, boss) {
     Canvas.ctx.clearRect(0, 0, 800, 600);
 
+    for (var i = 0; i < Canvas.Game.skillsAlive.length; i++) {
+        Canvas.Game.skillsAlive[i].draw(Canvas.ctx);
+    }
+
+
     myPlayer.draw(Canvas.ctx);
     otherPlayer.draw(Canvas.ctx);
     boss.draw(Canvas.ctx);
@@ -59,8 +65,8 @@ Canvas.doClick = function(e) {
     var posX = e.pageX - offset.x;     //find the x position of the mouse
     var posY = e.pageY - offset.y;     //find the y position of the mouse
 
-
-    e.target.myPlayer.cast(posX, posY);
+    //e.target.myPlayer.cast(posX, posY);
+    Canvas.Game.cast(e.target.myPlayer.x, e.target.myPlayer.y, posX, posY);
 };
 
 Canvas.findOffset = function(obj) {
@@ -160,14 +166,32 @@ var Game = {};
 // The time value of the last dt update
 Game.lastUpdate = new Date().getTime();
 
+Game.skillsAlive = [];
+
 // The update loop that iterates through all game objects
-Game.update = function (myPlayer, otherPlayer) {
+Game.update = function (myPlayer, otherPlayer, boss) {
     var dt = (new Date().getTime() - Game.lastUpdate) / 1000;
 
     myPlayer.update(dt);
     otherPlayer.update(dt);
 
+    for (var i = 0; i < Game.skillsAlive.length; i++) {
+        var cur = Game.skillsAlive[i];
+        if (cur.dead) {
+            Game.skillsAlive.splice(i, 1);
+            i--;
+        } else {
+            cur.clientUpdate(dt, myPlayer, boss);
+        }
+    }
+
     Game.lastUpdate = new Date().getTime();
+};
+
+Game.cast = function(x, y, posX, posY) {
+    var sDir = Math.atan2(posY - y, posX - x);
+
+    Game.skillsAlive.push(new Game.Skill(x, y, sDir, 60, Math.PI / 2, 2.5, 0, 25, 0, 0, "brown"));
 };
 
 module.exports = Game;
@@ -186,15 +210,16 @@ var Player = require("./player.js");
 var Boss = require("./boss.js");
 var Skill = require("./skill.js");
 
-Player.Skill = Skill;
+Canvas.Game = Game;
+Game.Skill = Skill;
 
 
 // Declare and initialize the players
-var myPlayer = new Player(0, 0, 0);
-var otherPlayer = new Player(0, 0, 0);
+var myPlayer = new Player(0, 0, 10, 0, 0);
+var otherPlayer = new Player(0, 0, 10, 0, 0);
 
 // Declare the boss
-var boss = new Boss(0, 0, 0);
+var boss = new Boss(0, 0, 50, 0);
 
 // Called at the beginning to initialize the event listeners on the canvas
 window.onload = function() {
@@ -243,7 +268,7 @@ socket.on('bossUpdate', function (data) {
 
 // Updates 60 times a second as well as draws the updated screen
 function updateLoop() {
-    Game.update(myPlayer, otherPlayer);
+    Game.update(myPlayer, otherPlayer, boss);
     Canvas.draw(myPlayer, otherPlayer, boss);
 }
 
@@ -253,21 +278,18 @@ setInterval(updateLoop, 1000 / 60);
  * Created by Kostya on 4/8/2015.
  */
 // Represents the human entities in the game
-function Player(x, y, num, socket) {
+function Player(x, y, r, maxHealth, num, socket) {
     this.x = x; this.y = y;
     this.ix = x; this.iy = y;
+    this.r = r;
     this.vel = 0; this.moveDir = 0;
     this.ivel = 115;
     this.num = num;
     this.socket = socket;
-    this.skillsAlive = [];
+
+    this.health = maxHealth;
+    this.maxHealth = maxHealth;
 }
-
-Player.prototype.cast = function(posX, posY) {
-    var sDir = Math.atan2(posY - this.y, posX - this.x);
-
-    this.skillsAlive.push(new Player.Skill(this.x, this.y, sDir, 60, Math.PI / 2, 2.5, 0, 0, 0, 0, "green"));
-};
 
 // Server-side for the player to send initial position to new connector
 Player.prototype.getStartPacket = function() {
@@ -290,33 +312,18 @@ Player.prototype.update = function(dt) {
     if (Math.abs(this.ix - this.x) < 5 && Math.abs(this.iy - this.y) < 5) {
         this.ix = this.x;
         this.iy = this.y;
-        console.log(this.ix + " " + this.iy);
     } else {
         var idir = Math.atan2(this.y - this.iy, this.x - this.ix);
         this.ix += Math.cos(idir) * this.ivel * dt;
         this.iy += Math.sin(idir) * this.ivel * dt;
     }
-
-    for (var i = 0; i < this.skillsAlive.length; i++) {
-        var cur = this.skillsAlive[i];
-        if (cur.dead) {
-            this.skillsAlive.splice(i, 1);
-            i--;
-        } else {
-            cur.update(dt);
-        }
-    }
 };
 
 // Draws the player on the canvas' context
 Player.prototype.draw = function(ctx) {
-    for (var i = 0; i < this.skillsAlive.length; i++) {
-        this.skillsAlive[i].draw(ctx);
-    }
-
     ctx.fillStyle = "black";
     ctx.beginPath();
-    ctx.arc(this.ix, this.iy, 10, 0, 2 * Math.PI);
+    ctx.arc(this.ix, this.iy, this.r, 0, 2 * Math.PI);
     ctx.fill();
 };
 
@@ -331,6 +338,7 @@ var Skill = function(x, y, dir, r, cir, castTime, aDamage, eDamage, aHealing, eH
     this.eHealing = eHealing; this.color = color; this.dead = false;
 };
 
+// This is done
 Skill.prototype.draw = function(ctx) {
     if (this.dead) {
         return;
@@ -352,10 +360,27 @@ Skill.prototype.draw = function(ctx) {
     ctx.globalAlpha = 1;
 };
 
-Skill.prototype.update = function(dt) {
+
+Skill.prototype.clientUpdate = function(dt, myPlayer, boss) {
     this.currentCast += dt;
     if (this.currentCast > this.castTime) {
         this.dead = true;
+        var pDir = Math.atan2(myPlayer.y - this.y, myPlayer.x - this.x);
+        var bDir = Math.atan2(boss.y - this.y, boss.x - this.x);
+        var pDist = Math.pow(myPlayer.x - this.x, 2) + Math.pow(myPlayer.y - this.y, 2) < Math.pow(this.r + myPlayer.r, 2);
+        var bDist = Math.pow(boss.x - this.x, 2) + Math.pow(boss.y - this.y, 2) < Math.pow(this.r + boss.r, 2);
+
+        var pAngle = (pDir - this.dir) % (Math.PI * 2);
+        var bAngle = (bDir - this.dir) % (Math.PI * 2);
+
+        console.log(this.cir);
+
+        if (pDist && pAngle <= this.cir / 2 && pAngle >= this.cir / -2) {
+            myPlayer.health = Math.min(myPlayer.maxHealth, myPlayer.health - this.aDamage + this.aHealing);
+        }
+        if (bDist && bAngle <= this.cir / 2 && bAngle >= this.cir / -2) {
+            boss.health = Math.min(boss.maxHealth, boss.health - this.eDamage + this.eHealing);
+        }
     }
 };
 

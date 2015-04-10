@@ -23,7 +23,7 @@ var Game = require("./server_game.js");
 var player1 = null;
 var player2 = null;
 
-var boss = new Boss(400, 300, 1000);
+var boss = new Boss(400, 300, 50, 1000);
 
 
 
@@ -34,10 +34,10 @@ var boss = new Boss(400, 300, 1000);
 io.on('connection', function (socket) {
     console.log("New connection on port 8080.");
     if (player1 == null) {
-        player1 = new Player(0, 0, 1, socket);
+        player1 = new Player(0, 0, 10, 1, socket);
         socket.emit("start", {num: 1, boss: boss.getStartPacket()});
     } else if (player2 == null) {
-        player2 = new Player(0, 0, 2, socket);
+        player2 = new Player(0, 0, 10, 2, socket);
         socket.emit("start", {num: 2, boss: boss.getStartPacket(), player: player1.getStartPacket()});
     }
 

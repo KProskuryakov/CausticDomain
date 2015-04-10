@@ -7,6 +7,11 @@ var Canvas = {};
 Canvas.draw = function(myPlayer, otherPlayer, boss) {
     Canvas.ctx.clearRect(0, 0, 800, 600);
 
+    for (var i = 0; i < Canvas.Game.skillsAlive.length; i++) {
+        Canvas.Game.skillsAlive[i].draw(Canvas.ctx);
+    }
+
+
     myPlayer.draw(Canvas.ctx);
     otherPlayer.draw(Canvas.ctx);
     boss.draw(Canvas.ctx);
@@ -19,8 +24,8 @@ Canvas.doClick = function(e) {
     var posX = e.pageX - offset.x;     //find the x position of the mouse
     var posY = e.pageY - offset.y;     //find the y position of the mouse
 
-
-    e.target.myPlayer.cast(posX, posY);
+    //e.target.myPlayer.cast(posX, posY);
+    Canvas.Game.cast(e.target.myPlayer.x, e.target.myPlayer.y, posX, posY);
 };
 
 Canvas.findOffset = function(obj) {

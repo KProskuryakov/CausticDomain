@@ -2,8 +2,9 @@
  * Created by Kostya on 4/8/2015.
  */
 // Represents the boss entities in the game
-var Boss = function (x, y, health) {
+var Boss = function (x, y, r, health) {
     this.x = x; this.y = y;
+    this.r = r;
     this.health = health;
     this.maxHealth = health;
 };
@@ -20,10 +21,10 @@ Boss.prototype.getBossPacket = function(){
 
 // Draws the boss
 Boss.prototype.draw = function(ctx) {
-    ctx.strokeStyle = "red";
+    ctx.fillStyle = "red";
     ctx.beginPath();
-    ctx.arc(this.x, this.y, 30, 0, 2 * Math.PI);
-    ctx.stroke();
+    ctx.arc(this.x, this.y, this.r, 0, 2 * Math.PI);
+    ctx.fill();
 };
 
 // Draws the bosses health bar at the top of the screen

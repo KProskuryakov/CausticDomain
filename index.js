@@ -12,15 +12,16 @@ var Player = require("./player.js");
 var Boss = require("./boss.js");
 var Skill = require("./skill.js");
 
-Player.Skill = Skill;
+Canvas.Game = Game;
+Game.Skill = Skill;
 
 
 // Declare and initialize the players
-var myPlayer = new Player(0, 0, 0);
-var otherPlayer = new Player(0, 0, 0);
+var myPlayer = new Player(0, 0, 10, 0, 0);
+var otherPlayer = new Player(0, 0, 10, 0, 0);
 
 // Declare the boss
-var boss = new Boss(0, 0, 0);
+var boss = new Boss(0, 0, 50, 0);
 
 // Called at the beginning to initialize the event listeners on the canvas
 window.onload = function() {
@@ -69,7 +70,7 @@ socket.on('bossUpdate', function (data) {
 
 // Updates 60 times a second as well as draws the updated screen
 function updateLoop() {
-    Game.update(myPlayer, otherPlayer);
+    Game.update(myPlayer, otherPlayer, boss);
     Canvas.draw(myPlayer, otherPlayer, boss);
 }
 
