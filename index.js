@@ -10,11 +10,10 @@ var Game = require("./client_game.js");
 var Canvas = require("./canvas.js");
 var Player = require("./player.js");
 var Boss = require("./boss.js");
+var Skill = require("./skill.js");
 
-// TODO create the Skill definition (in another file) and implement
-var Skill = function(x, y, dir, r, cir, castTime, hitsPlayers, hitsEnemies, damage, healing) {
+Player.Skill = Skill;
 
-};
 
 // Declare and initialize the players
 var myPlayer = new Player(0, 0, 0);
@@ -26,9 +25,11 @@ var boss = new Boss(0, 0, 0);
 // Called at the beginning to initialize the event listeners on the canvas
 window.onload = function() {
     var canvas = document.getElementById("myCanvas");
+    Canvas.canvas = canvas;
     Canvas.ctx = canvas.getContext("2d");
     canvas.addEventListener('keydown', Canvas.checkKeys, true);
     canvas.addEventListener('keyup', Canvas.checkKeys, true);
+    canvas.addEventListener('click', Canvas.doClick, false);
     canvas.myPlayer = myPlayer;
     canvas.socket = socket;
 };

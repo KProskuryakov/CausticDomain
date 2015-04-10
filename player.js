@@ -9,7 +9,14 @@ function Player(x, y, num, socket) {
     this.ivel = 115;
     this.num = num;
     this.socket = socket;
+    this.skillsAlive = [];
 }
+
+Player.prototype.cast = function(posX, posY) {
+    var sDir = Math.atan2(posY - this.y, posX - this.x);
+
+    this.skillsAlive.push(new Player.Skill(this.x, this.y, sDir, 60, Math.PI / 2, 2.5, 0, 0, 0, 0, "green"));
+};
 
 // Server-side for the player to send initial position to new connector
 Player.prototype.getStartPacket = function() {
@@ -38,14 +45,28 @@ Player.prototype.update = function(dt) {
         this.ix += Math.cos(idir) * this.ivel * dt;
         this.iy += Math.sin(idir) * this.ivel * dt;
     }
+
+    for (var i = 0; i < this.skillsAlive.length; i++) {
+        var cur = this.skillsAlive[i];
+        if (cur.dead) {
+            this.skillsAlive.splice(i, 1);
+            i--;
+        } else {
+            cur.update(dt);
+        }
+    }
 };
 
 // Draws the player on the canvas' context
 Player.prototype.draw = function(ctx) {
-    ctx.strokeStyle = "black";
+    for (var i = 0; i < this.skillsAlive.length; i++) {
+        this.skillsAlive[i].draw(ctx);
+    }
+
+    ctx.fillStyle = "black";
     ctx.beginPath();
     ctx.arc(this.ix, this.iy, 10, 0, 2 * Math.PI);
-    ctx.stroke();
+    ctx.fill();
 };
 
 module.exports = Player;

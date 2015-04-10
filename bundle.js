@@ -54,6 +54,28 @@ Canvas.draw = function(myPlayer, otherPlayer, boss) {
     boss.drawHealth(Canvas.ctx);
 };
 
+Canvas.doClick = function(e) {
+    var offset = Canvas.findOffset(Canvas.canvas);
+    var posX = e.pageX - offset.x;     //find the x position of the mouse
+    var posY = e.pageY - offset.y;     //find the y position of the mouse
+
+
+    e.target.myPlayer.cast(posX, posY);
+};
+
+Canvas.findOffset = function(obj) {
+    var curX = 0;
+    var curY = 0;
+    if (obj.offsetParent) {   //if the browser supports offsetParent then we can use it
+        do {
+            curX += obj.offsetLeft;  //get left position of the obj and add it to the var.
+            curY += obj.offsetTop;   //gets top position and add it to the var.
+        } while (obj = obj.offsetParent);
+
+        return {x:curX, y:curY};  //this is a function that returns two values
+    }
+};
+
 Canvas.keys = [];
 Canvas.curKeyEvent = -1;
 
@@ -162,11 +184,10 @@ var Game = require("./client_game.js");
 var Canvas = require("./canvas.js");
 var Player = require("./player.js");
 var Boss = require("./boss.js");
+var Skill = require("./skill.js");
 
-// TODO create the Skill definition (in another file) and implement
-var Skill = function(x, y, dir, r, cir, castTime, hitsPlayers, hitsEnemies, damage, healing) {
+Player.Skill = Skill;
 
-};
 
 // Declare and initialize the players
 var myPlayer = new Player(0, 0, 0);
@@ -178,9 +199,11 @@ var boss = new Boss(0, 0, 0);
 // Called at the beginning to initialize the event listeners on the canvas
 window.onload = function() {
     var canvas = document.getElementById("myCanvas");
+    Canvas.canvas = canvas;
     Canvas.ctx = canvas.getContext("2d");
     canvas.addEventListener('keydown', Canvas.checkKeys, true);
     canvas.addEventListener('keyup', Canvas.checkKeys, true);
+    canvas.addEventListener('click', Canvas.doClick, false);
     canvas.myPlayer = myPlayer;
     canvas.socket = socket;
 };
@@ -225,7 +248,7 @@ function updateLoop() {
 }
 
 setInterval(updateLoop, 1000 / 60);
-},{"./boss.js":1,"./canvas.js":2,"./client_game.js":3,"./player.js":5}],5:[function(require,module,exports){
+},{"./boss.js":1,"./canvas.js":2,"./client_game.js":3,"./player.js":5,"./skill.js":6}],5:[function(require,module,exports){
 /**
  * Created by Kostya on 4/8/2015.
  */
@@ -237,7 +260,14 @@ function Player(x, y, num, socket) {
     this.ivel = 115;
     this.num = num;
     this.socket = socket;
+    this.skillsAlive = [];
 }
+
+Player.prototype.cast = function(posX, posY) {
+    var sDir = Math.atan2(posY - this.y, posX - this.x);
+
+    this.skillsAlive.push(new Player.Skill(this.x, this.y, sDir, 60, Math.PI / 2, 2.5, 0, 0, 0, 0, "green"));
+};
 
 // Server-side for the player to send initial position to new connector
 Player.prototype.getStartPacket = function() {
@@ -266,15 +296,68 @@ Player.prototype.update = function(dt) {
         this.ix += Math.cos(idir) * this.ivel * dt;
         this.iy += Math.sin(idir) * this.ivel * dt;
     }
+
+    for (var i = 0; i < this.skillsAlive.length; i++) {
+        var cur = this.skillsAlive[i];
+        if (cur.dead) {
+            this.skillsAlive.splice(i, 1);
+            i--;
+        } else {
+            cur.update(dt);
+        }
+    }
 };
 
 // Draws the player on the canvas' context
 Player.prototype.draw = function(ctx) {
-    ctx.strokeStyle = "black";
+    for (var i = 0; i < this.skillsAlive.length; i++) {
+        this.skillsAlive[i].draw(ctx);
+    }
+
+    ctx.fillStyle = "black";
     ctx.beginPath();
     ctx.arc(this.ix, this.iy, 10, 0, 2 * Math.PI);
-    ctx.stroke();
+    ctx.fill();
 };
 
 module.exports = Player;
+},{}],6:[function(require,module,exports){
+/**
+ * Created by Kostya on 4/9/2015.
+ */
+var Skill = function(x, y, dir, r, cir, castTime, aDamage, eDamage, aHealing, eHealing, color) {
+    this.x = x; this.y = y; this.dir = dir; this.r = r; this.cir = cir; this.currentCast = 0;
+    this.castTime = castTime; this.aDamage = aDamage; this.eDamage = eDamage; this.aHealing = aHealing;
+    this.eHealing = eHealing; this.color = color; this.dead = false;
+};
+
+Skill.prototype.draw = function(ctx) {
+    if (this.dead) {
+        return;
+    }
+    ctx.globalAlpha = .3;
+    ctx.fillStyle = this.color;
+
+    ctx.beginPath();
+    ctx.moveTo(this.x, this.y);
+    ctx.arc(this.x, this.y, this.r, this.dir - (this.cir / 2), this.dir + (this.cir / 2));
+    ctx.fill();
+
+    ctx.globalAlpha = .6;
+    ctx.beginPath();
+    ctx.moveTo(this.x, this.y);
+    ctx.arc(this.x, this.y, this.r * this.currentCast / this.castTime, this.dir - (this.cir / 2), this.dir + (this.cir / 2));
+    ctx.fill();
+
+    ctx.globalAlpha = 1;
+};
+
+Skill.prototype.update = function(dt) {
+    this.currentCast += dt;
+    if (this.currentCast > this.castTime) {
+        this.dead = true;
+    }
+};
+
+module.exports = Skill;
 },{}]},{},[4]);

@@ -14,6 +14,28 @@ Canvas.draw = function(myPlayer, otherPlayer, boss) {
     boss.drawHealth(Canvas.ctx);
 };
 
+Canvas.doClick = function(e) {
+    var offset = Canvas.findOffset(Canvas.canvas);
+    var posX = e.pageX - offset.x;     //find the x position of the mouse
+    var posY = e.pageY - offset.y;     //find the y position of the mouse
+
+
+    e.target.myPlayer.cast(posX, posY);
+};
+
+Canvas.findOffset = function(obj) {
+    var curX = 0;
+    var curY = 0;
+    if (obj.offsetParent) {   //if the browser supports offsetParent then we can use it
+        do {
+            curX += obj.offsetLeft;  //get left position of the obj and add it to the var.
+            curY += obj.offsetTop;   //gets top position and add it to the var.
+        } while (obj = obj.offsetParent);
+
+        return {x:curX, y:curY};  //this is a function that returns two values
+    }
+};
+
 Canvas.keys = [];
 Canvas.curKeyEvent = -1;
 
