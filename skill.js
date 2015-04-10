@@ -7,6 +7,7 @@ var Skill = function(x, y, dir, r, cir, castTime, aDamage, eDamage, aHealing, eH
     this.eHealing = eHealing; this.color = color; this.dead = false;
 };
 
+// This is done
 Skill.prototype.draw = function(ctx) {
     if (this.dead) {
         return;
