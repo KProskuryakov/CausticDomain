@@ -36,7 +36,7 @@ io.on('connection', function (socket) {
             }
             player = Game.addPlayer(data.name, socket);
             socket.emit('loginSuccess', {playerData: playerData, player: player.getStartPacket()});
-            socket.broadcast.emit('playerConnect', player.getStartPacket());
+            socket.broadcast.emit('playerConnected', player.getStartPacket());
         }
     });
 

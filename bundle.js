@@ -169,8 +169,6 @@ Canvas.doClick = function(e) {
     var posX = e.pageX - offset.x;     //find the x position of the mouse
     var posY = e.pageY - offset.y;     //find the y position of the mouse
 
-    //Canvas.Game.myPlayer.cast(posX, posY);
-
     //Canvas.Game.cast(Canvas.Game.myPlayer.x, Canvas.Game.myPlayer.y, posX, posY);
 };
 
@@ -352,12 +350,12 @@ socket.on('moveChange', function (data) {
     Game.moveChange(data);
 });
 
-socket.on('playerConnect', function (data) {
+socket.on('playerConnected', function (data) {
     Game.initPlayer(data);
 });
 
 // A player disconnected!
-socket.on('playerDisconnect', function (data) {
+socket.on('playerDisconnected', function (data) {
     Game.removePlayer(data.name);
 });
 

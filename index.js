@@ -42,12 +42,12 @@ socket.on('moveChange', function (data) {
     Game.moveChange(data);
 });
 
-socket.on('playerConnect', function (data) {
+socket.on('playerConnected', function (data) {
     Game.initPlayer(data);
 });
 
 // A player disconnected!
-socket.on('playerDisconnect', function (data) {
+socket.on('playerDisconnected', function (data) {
     Game.removePlayer(data.name);
 });
 
