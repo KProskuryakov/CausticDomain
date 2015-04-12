@@ -42,8 +42,6 @@ Skill.prototype.clientUpdate = function(dt, myPlayer, boss) {
         var pAngle = (pDir - this.dir) % (Math.PI * 2);
         var bAngle = (bDir - this.dir) % (Math.PI * 2);
 
-        console.log(this.cir);
-
         if (pDist && pAngle <= this.cir / 2 && pAngle >= this.cir / -2) {
             myPlayer.health = Math.max(Math.min(myPlayer.maxHealth, myPlayer.health - this.aDamage + this.aHealing), 0);
         }

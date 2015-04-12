@@ -20,12 +20,12 @@ Game.boss = null;
 Game.skillsAlive = [];
 
 Game.initMyPlayer = function(packet, socket) {
-    Game.myPlayer = new Game.Player(packet.x, packet.y, 10, 100, socket, packet.name);
+    Game.myPlayer = new Game.Player(packet.x, packet.y, 10, 100, socket, packet.name, Game);
 };
 
 
 Game.initPlayer = function (packet) {
-    var newPlayer = new Game.Player(packet.x, packet.y, 10, 100, null, packet.name);
+    var newPlayer = new Game.Player(packet.x, packet.y, 10, 100, null, packet.name, Game);
     newPlayer.vel = packet.vel;
     newPlayer.moveDir = packet.moveDir;
     Game.players.push(newPlayer);
@@ -85,13 +85,13 @@ Game.update = function () {
         for (var i = 0; i < Game.players.length; i++) {
             Game.players[i].update(dt);
         }
-        for (var i = 0; i < Game.skillsAlive.length; i++) {
+        for (i = 0; i < Game.skillsAlive.length; i++) {
             var cur = Game.skillsAlive[i];
             if (cur.dead) {
                 Game.skillsAlive.splice(i, 1);
                 i--;
             } else {
-                cur.clientUpdate(dt, Game.myPlayer, Game.boss); // TODO fix skill update code
+                cur.clientUpdate(dt, Game.myPlayer, Game.boss);
             }
         }
     }
@@ -100,9 +100,9 @@ Game.update = function () {
 };
 
 Game.cast = function(x, y, posX, posY) {
-    var sDir = Math.atan2(posY - y, posX - x);
 
-    Game.skillsAlive.push(new Game.Skill(x, y, sDir, 60, Math.PI / 2, 2.5, 0, 25, 0, 0, "brown"));
+
+    Game.skillsAlive.push();
 };
 
 module.exports = Game;

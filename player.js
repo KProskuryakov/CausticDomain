@@ -2,7 +2,7 @@
  * Created by Kostya on 4/8/2015.
  */
 // Represents the human entities in the game
-function Player(x, y, r, maxHealth, socket, name) {
+function Player(x, y, r, maxHealth, socket, name, Game) {
     this.x = x; this.y = y;
     this.ix = x; this.iy = y;
     this.r = r;
@@ -14,6 +14,16 @@ function Player(x, y, r, maxHealth, socket, name) {
 
     this.health = maxHealth;
     this.maxHealth = maxHealth;
+
+    this.combatState = "normal";
+    this.revertTimer = 0;
+
+    this.Game = Game;
+
+    this.skills = {
+        click: new Game.Skill(this.x, this.y, 0, 60, Math.PI / 2, 2.5, 0, 25, 0, 0, "brown")
+    };
+    console.log(this.skills);
 }
 
 // Server-side for the player to send initial position to new connector
@@ -26,12 +36,36 @@ Player.prototype.getMovePacket = function() {
     return {x: this.x, y: this.y, vel: this.vel, moveDir: this.moveDir, name: this.name};
 };
 
+Player.prototype.copySkill = function(id, dir) {
+    var original = this.skills[id];
+    var copy = new this.Game.Skill(this.x, this.y, dir, original.r, original.cir, original.castTime, original.aDamage, original.eDamage, original.aHealing, original.eHealing, original.color);
+    return copy;
+};
+
+Player.prototype.cast = function(Game, id, posX, posY) {
+    if (this.combatState == "normal") {
+        var sDir = Math.atan2(posY - this.y, posX - this.x);
+        var skill = this.copySkill(id, sDir);
+        this.combatState = "casting";
+        this.revertTimer = skill.castTime;
+        if (this.vel != 0) {
+            this.vel = 0;
+            this.socket.emit("moveChange".this.getMovePacket());
+        }
+        Game.skillsAlive.push(skill);
+    }
+};
+
 // Increments the player's position
 Player.prototype.update = function(dt) {
-    //if (this.isCasting) {
-    //    this.vel = 0;
-    //    return;
-    //}
+    if (this.combatState != "normal") {
+        this.revertTimer -= dt;
+        if (this.revertTimer < 0) {
+            this.combatState = "normal";
+        } else {
+            return;
+        }
+    }
     if (this.vel != 0) {
         var xinc = Math.cos(this.moveDir) * this.vel * dt;
         var yinc = Math.sin(this.moveDir) * this.vel * dt;

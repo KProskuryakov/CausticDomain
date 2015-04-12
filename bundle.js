@@ -48,7 +48,10 @@ module.exports = Boss;
  */
 var Canvas = {};
 
-Canvas.gameScreen = function() {};
+Canvas.gameScreen = function() {
+    this.keys = [];
+    this.curKeyEvent = -1;
+};
 
 Canvas.menuScreen = function() {
     this.name = "";
@@ -70,8 +73,8 @@ Canvas.gameScreen.prototype.draw = function() {
         Canvas.Game.skillsAlive[i].draw(Canvas.ctx);
     }
 
-    for (var j = 0; j < Canvas.Game.players.length; j++) {
-        Canvas.Game.players[j].draw(Canvas.ctx);
+    for (i = 0; i < Canvas.Game.players.length; i++) {
+        Canvas.Game.players[i].draw(Canvas.ctx);
     }
 
     Canvas.Game.myPlayer.draw(Canvas.ctx);
@@ -84,68 +87,70 @@ Canvas.menuScreen.prototype.draw = function() {
 };
 
 Canvas.gameScreen.prototype.checkKeys = function(e) {
-    Canvas.keys[e.keyCode] = e.type == 'keydown';
-    if (Canvas.keys[87] && Canvas.keys[83] || Canvas.keys[65] && Canvas.keys[68] || !Canvas.keys[87] && !Canvas.keys[83] && !Canvas.keys[65] && !Canvas.keys[68]) {
-        Canvas.Game.myPlayer.vel = 0;
-        if (Canvas.curKeyEvent != 0) {
-            Canvas.curKeyEvent = 0;
-            Canvas.socket.emit("moveChange", Canvas.Game.myPlayer.getMovePacket());
-        }
-    } else if (Canvas.keys[87] && Canvas.keys[65]) {
-        Canvas.Game.myPlayer.moveDir = -3 * Math.PI / 4;
-        Canvas.Game.myPlayer.vel = 100;
-        if (Canvas.curKeyEvent != 1) {
-            Canvas.curKeyEvent = 1;
-            Canvas.socket.emit("moveChange", Canvas.Game.myPlayer.getMovePacket());
-        }
-    } else if (Canvas.keys[87] && Canvas.keys[68]) {
-        Canvas.Game.myPlayer.moveDir = -Math.PI / 4;
-        Canvas.Game.myPlayer.vel = 100;
-        if (Canvas.curKeyEvent != 2) {
-            Canvas.curKeyEvent = 2;
-            Canvas.socket.emit("moveChange", Canvas.Game.myPlayer.getMovePacket());
-        }
-    } else if (Canvas.keys[83] && Canvas.keys[65]) {
-        Canvas.Game.myPlayer.moveDir = 3 * Math.PI / 4;
-        Canvas.Game.myPlayer.vel = 100;
-        if (Canvas.curKeyEvent != 3) {
-            Canvas.curKeyEvent = 3;
-            Canvas.socket.emit("moveChange", Canvas.Game.myPlayer.getMovePacket());
-        }
-    } else if (Canvas.keys[83] && Canvas.keys[68]) {
-        Canvas.Game.myPlayer.moveDir = Math.PI / 4;
-        Canvas.Game.myPlayer.vel = 100;
-        if (Canvas.curKeyEvent != 4) {
-            Canvas.curKeyEvent = 4;
-            Canvas.socket.emit("moveChange", Canvas.Game.myPlayer.getMovePacket());
-        }
-    } else if (Canvas.keys[87]) {
-        Canvas.Game.myPlayer.moveDir = -Math.PI / 2;
-        Canvas.Game.myPlayer.vel = 100;
-        if (Canvas.curKeyEvent != 5) {
-            Canvas.curKeyEvent = 5;
-            Canvas.socket.emit("moveChange", Canvas.Game.myPlayer.getMovePacket());
-        }
-    } else if (Canvas.keys[83]) {
-        Canvas.Game.myPlayer.moveDir = Math.PI / 2;
-        Canvas.Game.myPlayer.vel = 100;
-        if (Canvas.curKeyEvent != 6) {
-            Canvas.curKeyEvent = 6;
-            Canvas.socket.emit("moveChange", Canvas.Game.myPlayer.getMovePacket());
-        }
-    } else if (Canvas.keys[65]) {
-        Canvas.Game.myPlayer.moveDir = Math.PI;
-        Canvas.Game.myPlayer.vel = 100;
-        if (Canvas.curKeyEvent != 7) {
-            Canvas.curKeyEvent = 7;
-            Canvas.socket.emit("moveChange", Canvas.Game.myPlayer.getMovePacket());
-        }
-    } else if (Canvas.keys[68]) {
-        Canvas.Game.myPlayer.moveDir = 0;
-        Canvas.Game.myPlayer.vel = 100;
-        if (Canvas.curKeyEvent != 8) {
-            Canvas.curKeyEvent = 8;
-            Canvas.socket.emit("moveChange", Canvas.Game.myPlayer.getMovePacket());
+    this.keys[e.keyCode] = e.type == 'keydown';
+    if (Canvas.Game.myPlayer.combatState == "normal") {
+        if (this.keys[87] && this.keys[83] || this.keys[65] && this.keys[68] || !this.keys[87] && !this.keys[83] && !this.keys[65] && !this.keys[68]) {
+            Canvas.Game.myPlayer.vel = 0;
+            if (this.curKeyEvent != 0) {
+                this.curKeyEvent = 0;
+                Canvas.socket.emit("moveChange", Canvas.Game.myPlayer.getMovePacket());
+            }
+        } else if (this.keys[87] && this.keys[65]) {
+            Canvas.Game.myPlayer.moveDir = -3 * Math.PI / 4;
+            Canvas.Game.myPlayer.vel = 100;
+            if (this.curKeyEvent != 1) {
+                this.curKeyEvent = 1;
+                Canvas.socket.emit("moveChange", Canvas.Game.myPlayer.getMovePacket());
+            }
+        } else if (this.keys[87] && this.keys[68]) {
+            Canvas.Game.myPlayer.moveDir = -Math.PI / 4;
+            Canvas.Game.myPlayer.vel = 100;
+            if (this.curKeyEvent != 2) {
+                this.curKeyEvent = 2;
+                Canvas.socket.emit("moveChange", Canvas.Game.myPlayer.getMovePacket());
+            }
+        } else if (this.keys[83] && this.keys[65]) {
+            Canvas.Game.myPlayer.moveDir = 3 * Math.PI / 4;
+            Canvas.Game.myPlayer.vel = 100;
+            if (this.curKeyEvent != 3) {
+                this.curKeyEvent = 3;
+                Canvas.socket.emit("moveChange", Canvas.Game.myPlayer.getMovePacket());
+            }
+        } else if (this.keys[83] && this.keys[68]) {
+            Canvas.Game.myPlayer.moveDir = Math.PI / 4;
+            Canvas.Game.myPlayer.vel = 100;
+            if (this.curKeyEvent != 4) {
+                this.curKeyEvent = 4;
+                Canvas.socket.emit("moveChange", Canvas.Game.myPlayer.getMovePacket());
+            }
+        } else if (this.keys[87]) {
+            Canvas.Game.myPlayer.moveDir = -Math.PI / 2;
+            Canvas.Game.myPlayer.vel = 100;
+            if (this.curKeyEvent != 5) {
+                this.curKeyEvent = 5;
+                Canvas.socket.emit("moveChange", Canvas.Game.myPlayer.getMovePacket());
+            }
+        } else if (this.keys[83]) {
+            Canvas.Game.myPlayer.moveDir = Math.PI / 2;
+            Canvas.Game.myPlayer.vel = 100;
+            if (this.curKeyEvent != 6) {
+                this.curKeyEvent = 6;
+                Canvas.socket.emit("moveChange", Canvas.Game.myPlayer.getMovePacket());
+            }
+        } else if (this.keys[65]) {
+            Canvas.Game.myPlayer.moveDir = Math.PI;
+            Canvas.Game.myPlayer.vel = 100;
+            if (this.curKeyEvent != 7) {
+                this.curKeyEvent = 7;
+                Canvas.socket.emit("moveChange", Canvas.Game.myPlayer.getMovePacket());
+            }
+        } else if (this.keys[68]) {
+            Canvas.Game.myPlayer.moveDir = 0;
+            Canvas.Game.myPlayer.vel = 100;
+            if (this.curKeyEvent != 8) {
+                this.curKeyEvent = 8;
+                Canvas.socket.emit("moveChange", Canvas.Game.myPlayer.getMovePacket());
+            }
         }
     }
     return false;
@@ -176,7 +181,7 @@ Canvas.gameScreen.prototype.doClick = function(e) {
     var posX = e.pageX - offset.x;     //find the x position of the mouse
     var posY = e.pageY - offset.y;     //find the y position of the mouse
 
-    Canvas.Game.cast(Canvas.Game.myPlayer.x, Canvas.Game.myPlayer.y, posX, posY);
+    Canvas.Game.myPlayer.cast(Canvas.Game, "click", posX, posY);
 };
 
 Canvas.menuScreen.prototype.doClick = function(e) {};
@@ -193,9 +198,6 @@ Canvas.findOffset = function(obj) {
         return {x:curX, y:curY};  //this is a function that returns two values
     }
 };
-
-Canvas.keys = [];
-Canvas.curKeyEvent = -1;
 
 // TODO replace all inner if-statements with a single function
 // Callback when any key event occurs during the game
@@ -237,12 +239,12 @@ Game.boss = null;
 Game.skillsAlive = [];
 
 Game.initMyPlayer = function(packet, socket) {
-    Game.myPlayer = new Game.Player(packet.x, packet.y, 10, 100, socket, packet.name);
+    Game.myPlayer = new Game.Player(packet.x, packet.y, 10, 100, socket, packet.name, Game);
 };
 
 
 Game.initPlayer = function (packet) {
-    var newPlayer = new Game.Player(packet.x, packet.y, 10, 100, null, packet.name);
+    var newPlayer = new Game.Player(packet.x, packet.y, 10, 100, null, packet.name, Game);
     newPlayer.vel = packet.vel;
     newPlayer.moveDir = packet.moveDir;
     Game.players.push(newPlayer);
@@ -302,13 +304,13 @@ Game.update = function () {
         for (var i = 0; i < Game.players.length; i++) {
             Game.players[i].update(dt);
         }
-        for (var i = 0; i < Game.skillsAlive.length; i++) {
+        for (i = 0; i < Game.skillsAlive.length; i++) {
             var cur = Game.skillsAlive[i];
             if (cur.dead) {
                 Game.skillsAlive.splice(i, 1);
                 i--;
             } else {
-                cur.clientUpdate(dt, Game.myPlayer, Game.boss); // TODO fix skill update code
+                cur.clientUpdate(dt, Game.myPlayer, Game.boss);
             }
         }
     }
@@ -317,9 +319,9 @@ Game.update = function () {
 };
 
 Game.cast = function(x, y, posX, posY) {
-    var sDir = Math.atan2(posY - y, posX - x);
 
-    Game.skillsAlive.push(new Game.Skill(x, y, sDir, 60, Math.PI / 2, 2.5, 0, 25, 0, 0, "brown"));
+
+    Game.skillsAlive.push();
 };
 
 module.exports = Game;
@@ -394,7 +396,7 @@ setInterval(updateLoop, 1000 / 60);
  * Created by Kostya on 4/8/2015.
  */
 // Represents the human entities in the game
-function Player(x, y, r, maxHealth, socket, name) {
+function Player(x, y, r, maxHealth, socket, name, Game) {
     this.x = x; this.y = y;
     this.ix = x; this.iy = y;
     this.r = r;
@@ -406,6 +408,16 @@ function Player(x, y, r, maxHealth, socket, name) {
 
     this.health = maxHealth;
     this.maxHealth = maxHealth;
+
+    this.combatState = "normal";
+    this.revertTimer = 0;
+
+    this.Game = Game;
+
+    this.skills = {
+        click: new Game.Skill(this.x, this.y, 0, 60, Math.PI / 2, 2.5, 0, 25, 0, 0, "brown")
+    };
+    console.log(this.skills);
 }
 
 // Server-side for the player to send initial position to new connector
@@ -418,12 +430,36 @@ Player.prototype.getMovePacket = function() {
     return {x: this.x, y: this.y, vel: this.vel, moveDir: this.moveDir, name: this.name};
 };
 
+Player.prototype.copySkill = function(id, dir) {
+    var original = this.skills[id];
+    var copy = new this.Game.Skill(this.x, this.y, dir, original.r, original.cir, original.castTime, original.aDamage, original.eDamage, original.aHealing, original.eHealing, original.color);
+    return copy;
+};
+
+Player.prototype.cast = function(Game, id, posX, posY) {
+    if (this.combatState == "normal") {
+        var sDir = Math.atan2(posY - this.y, posX - this.x);
+        var skill = this.copySkill(id, sDir);
+        this.combatState = "casting";
+        this.revertTimer = skill.castTime;
+        if (this.vel != 0) {
+            this.vel = 0;
+            this.socket.emit("moveChange".this.getMovePacket());
+        }
+        Game.skillsAlive.push(skill);
+    }
+};
+
 // Increments the player's position
 Player.prototype.update = function(dt) {
-    //if (this.isCasting) {
-    //    this.vel = 0;
-    //    return;
-    //}
+    if (this.combatState != "normal") {
+        this.revertTimer -= dt;
+        if (this.revertTimer < 0) {
+            this.combatState = "normal";
+        } else {
+            return;
+        }
+    }
     if (this.vel != 0) {
         var xinc = Math.cos(this.moveDir) * this.vel * dt;
         var yinc = Math.sin(this.moveDir) * this.vel * dt;
@@ -493,8 +529,6 @@ Skill.prototype.clientUpdate = function(dt, myPlayer, boss) {
 
         var pAngle = (pDir - this.dir) % (Math.PI * 2);
         var bAngle = (bDir - this.dir) % (Math.PI * 2);
-
-        console.log(this.cir);
 
         if (pDist && pAngle <= this.cir / 2 && pAngle >= this.cir / -2) {
             myPlayer.health = Math.max(Math.min(myPlayer.maxHealth, myPlayer.health - this.aDamage + this.aHealing), 0);

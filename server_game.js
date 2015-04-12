@@ -3,11 +3,12 @@
  */
 var Game = {};
 
-var Player = require('./player');
-var Boss = require('./boss');
+Game.Player = require('./player');
+Game.Boss = require('./boss');
+Game.Skill = require('./skill');
 
 Game.players = [];
-Game.boss = new Boss(400, 300, 50, 1000, 1000);
+Game.boss = new Game.Boss(400, 300, 50, 1000, 1000);
 
 Game.updatesPerSecond = 60;
 
@@ -33,7 +34,7 @@ Game.getPlayer = function(name) {
 };
 
 Game.addPlayer = function(name, socket) {
-    var player = new Player(0, 0, 10, 100, socket, name);
+    var player = new Game.Player(0, 0, 10, 100, socket, name, Game);
     Game.players.push(player);
     return player;
 };
