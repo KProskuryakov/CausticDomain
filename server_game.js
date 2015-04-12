@@ -4,8 +4,10 @@
 var Game = {};
 
 var Player = require('./player');
+var Boss = require('./boss');
 
 Game.players = [];
+Game.boss = new Boss(400, 300, 50, 1000, 1000);
 
 Game.updatesPerSecond = 60;
 

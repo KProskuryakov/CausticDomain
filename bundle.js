@@ -3,21 +3,25 @@
  * Created by Kostya on 4/8/2015.
  */
 // Represents the boss entities in the game
-var Boss = function (x, y, r, health) {
+var Boss = function (x, y, r, health, maxHealth) {
     this.x = x; this.y = y;
     this.r = r;
     this.health = health;
-    this.maxHealth = health;
+    this.maxHealth = maxHealth;
 };
 
 // Server-side send initial boss values to client
 Boss.prototype.getStartPacket = function() {
-    return {x: this.x, y: this.y, health: this.health, maxHealth: this.maxHealth};
+    return {x: this.x, y: this.y, r: this.r, health: this.health, maxHealth: this.maxHealth};
 };
 
 // Server-side boss update packet
-Boss.prototype.getBossPacket = function(){
+Boss.prototype.getBossPacket = function() {
     return {x: this.x, y: this.y, health: this.health};
+};
+
+Boss.prototype.healthUpdate = function(damage, healing) {
+    this.health = Math.max(Math.min(this.maxHealth, this.health - damage + healing), 0);
 };
 
 // Draws the boss
@@ -59,12 +63,15 @@ Canvas.draw = function() {
 };
 
 Canvas.gameScreen.prototype.draw = function() {
+    Canvas.Game.boss.draw(Canvas.ctx);
+    Canvas.Game.boss.drawHealth(Canvas.ctx);
+
     for (var i = 0; i < Canvas.Game.skillsAlive.length; i++) {
         Canvas.Game.skillsAlive[i].draw(Canvas.ctx);
     }
 
-    for (var j = 0; i < Canvas.Game.players.length; i++) {
-        Canvas.Game.players[i].draw(Canvas.ctx);
+    for (var j = 0; j < Canvas.Game.players.length; j++) {
+        Canvas.Game.players[j].draw(Canvas.ctx);
     }
 
     Canvas.Game.myPlayer.draw(Canvas.ctx);
@@ -164,13 +171,15 @@ Canvas.menuScreen.prototype.checkKeys = function(e) {
     return false;
 };
 
-Canvas.doClick = function(e) {
+Canvas.gameScreen.prototype.doClick = function(e) {
     var offset = Canvas.findOffset(Canvas.canvas);
     var posX = e.pageX - offset.x;     //find the x position of the mouse
     var posY = e.pageY - offset.y;     //find the y position of the mouse
 
-    //Canvas.Game.cast(Canvas.Game.myPlayer.x, Canvas.Game.myPlayer.y, posX, posY);
+    Canvas.Game.cast(Canvas.Game.myPlayer.x, Canvas.Game.myPlayer.y, posX, posY);
 };
+
+Canvas.menuScreen.prototype.doClick = function(e) {};
 
 Canvas.findOffset = function(obj) {
     var curX = 0;
@@ -199,6 +208,10 @@ Canvas.keyType = function(e) {
     Canvas.screen.keyType(e);
 };
 
+Canvas.doClick = function(e) {
+    Canvas.screen.doClick(e);
+};
+
 module.exports = Canvas;
 
 },{}],3:[function(require,module,exports){
@@ -207,9 +220,9 @@ module.exports = Canvas;
  */
 var Game = {};
 
-Game.Player = require("./player.js");
-Game.Boss = require("./boss.js");
-Game.Skill = require("./skill.js");
+Game.Player = require("./player");
+Game.Boss = require("./boss");
+Game.Skill = require("./skill");
 
 Game.state = "notLoggedIn"; // Possible states: notLoggedIn, loggedIn
 
@@ -219,12 +232,14 @@ Game.lastUpdate = new Date().getTime();
 
 Game.myPlayer = null;
 Game.players = [];
+Game.boss = null;
 
 Game.skillsAlive = [];
 
 Game.initMyPlayer = function(packet, socket) {
     Game.myPlayer = new Game.Player(packet.x, packet.y, 10, 100, socket, packet.name);
 };
+
 
 Game.initPlayer = function (packet) {
     var newPlayer = new Game.Player(packet.x, packet.y, 10, 100, null, packet.name);
@@ -237,6 +252,10 @@ Game.initPlayers = function(playerData) {
     for (var i = 0; i < playerData.length; i++) {
         Game.initPlayer(playerData[i]);
     }
+};
+
+Game.initBoss = function(boss) {
+    Game.boss = new Game.Boss(boss.x, boss.y, boss.r, boss.health, boss.maxHealth);
 };
 
 Game.moveChange = function(data) {
@@ -283,17 +302,16 @@ Game.update = function () {
         for (var i = 0; i < Game.players.length; i++) {
             Game.players[i].update(dt);
         }
+        for (var i = 0; i < Game.skillsAlive.length; i++) {
+            var cur = Game.skillsAlive[i];
+            if (cur.dead) {
+                Game.skillsAlive.splice(i, 1);
+                i--;
+            } else {
+                cur.clientUpdate(dt, Game.myPlayer, Game.boss); // TODO fix skill update code
+            }
+        }
     }
-
-    //for (var i = 0; i < Game.skillsAlive.length; i++) {
-    //    var cur = Game.skillsAlive[i];
-    //    if (cur.dead) {
-    //        Game.skillsAlive.splice(i, 1);
-    //        i--;
-    //    } else {
-    //        cur.clientUpdate(dt, myPlayer, boss); // TODO fix skill update code
-    //    }
-    //}
 
     Game.lastUpdate = new Date().getTime();
 };
@@ -305,7 +323,7 @@ Game.cast = function(x, y, posX, posY) {
 };
 
 module.exports = Game;
-},{"./boss.js":1,"./player.js":5,"./skill.js":6}],4:[function(require,module,exports){
+},{"./boss":1,"./player":5,"./skill":6}],4:[function(require,module,exports){
 /**
  * Created by Kostya on 4/8/2015.
  * browserify index.js > bundle.js
@@ -337,26 +355,31 @@ window.onload = function() {
 socket.on('loginSuccess', function (data) {
     Game.initMyPlayer(data.player, socket);
     Game.initPlayers(data.playerData);
+    Game.initBoss(data.bossData);
     Game.changeState("loggedIn");
 });
 
 // Server rejects client login
-socket.on('loginFailed', function () {
+socket.on('loginFailed', function() {
     console.log("Login Failed!");
 });
 
 // A change in another player's movement was detected and sent
-socket.on('moveChange', function (data) {
+socket.on('moveChange', function(data) {
     Game.moveChange(data);
 });
 
-socket.on('playerConnected', function (data) {
+socket.on('playerConnected', function(data) {
     Game.initPlayer(data);
 });
 
 // A player disconnected!
-socket.on('playerDisconnected', function (data) {
+socket.on('playerDisconnected', function(data) {
     Game.removePlayer(data.name);
+});
+
+socket.on('bossUpdate', function(data) {
+    Game.boss.healthUpdate(data.damage, data.healing);
 });
 
 // Updates 60 times a second as well as draws the updated screen
@@ -477,7 +500,8 @@ Skill.prototype.clientUpdate = function(dt, myPlayer, boss) {
             myPlayer.health = Math.max(Math.min(myPlayer.maxHealth, myPlayer.health - this.aDamage + this.aHealing), 0);
         }
         if (bDist && bAngle <= this.cir / 2 && bAngle >= this.cir / -2) {
-            boss.health = Math.max(Math.min(boss.maxHealth, boss.health - this.eDamage + this.eHealing), 0);
+            boss.healthUpdate(this.eDamage, this.eHealing);
+            myPlayer.socket.emit("bossUpdate", {damage: this.eDamage, healing: this.eHealing});
         }
     }
 };

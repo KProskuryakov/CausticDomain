@@ -3,9 +3,9 @@
  */
 var Game = {};
 
-Game.Player = require("./player.js");
-Game.Boss = require("./boss.js");
-Game.Skill = require("./skill.js");
+Game.Player = require("./player");
+Game.Boss = require("./boss");
+Game.Skill = require("./skill");
 
 Game.state = "notLoggedIn"; // Possible states: notLoggedIn, loggedIn
 
@@ -15,12 +15,14 @@ Game.lastUpdate = new Date().getTime();
 
 Game.myPlayer = null;
 Game.players = [];
+Game.boss = null;
 
 Game.skillsAlive = [];
 
 Game.initMyPlayer = function(packet, socket) {
     Game.myPlayer = new Game.Player(packet.x, packet.y, 10, 100, socket, packet.name);
 };
+
 
 Game.initPlayer = function (packet) {
     var newPlayer = new Game.Player(packet.x, packet.y, 10, 100, null, packet.name);
@@ -33,6 +35,10 @@ Game.initPlayers = function(playerData) {
     for (var i = 0; i < playerData.length; i++) {
         Game.initPlayer(playerData[i]);
     }
+};
+
+Game.initBoss = function(boss) {
+    Game.boss = new Game.Boss(boss.x, boss.y, boss.r, boss.health, boss.maxHealth);
 };
 
 Game.moveChange = function(data) {
@@ -79,17 +85,16 @@ Game.update = function () {
         for (var i = 0; i < Game.players.length; i++) {
             Game.players[i].update(dt);
         }
+        for (var i = 0; i < Game.skillsAlive.length; i++) {
+            var cur = Game.skillsAlive[i];
+            if (cur.dead) {
+                Game.skillsAlive.splice(i, 1);
+                i--;
+            } else {
+                cur.clientUpdate(dt, Game.myPlayer, Game.boss); // TODO fix skill update code
+            }
+        }
     }
-
-    //for (var i = 0; i < Game.skillsAlive.length; i++) {
-    //    var cur = Game.skillsAlive[i];
-    //    if (cur.dead) {
-    //        Game.skillsAlive.splice(i, 1);
-    //        i--;
-    //    } else {
-    //        cur.clientUpdate(dt, myPlayer, boss); // TODO fix skill update code
-    //    }
-    //}
 
     Game.lastUpdate = new Date().getTime();
 };

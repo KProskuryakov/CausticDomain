@@ -2,21 +2,25 @@
  * Created by Kostya on 4/8/2015.
  */
 // Represents the boss entities in the game
-var Boss = function (x, y, r, health) {
+var Boss = function (x, y, r, health, maxHealth) {
     this.x = x; this.y = y;
     this.r = r;
     this.health = health;
-    this.maxHealth = health;
+    this.maxHealth = maxHealth;
 };
 
 // Server-side send initial boss values to client
 Boss.prototype.getStartPacket = function() {
-    return {x: this.x, y: this.y, health: this.health, maxHealth: this.maxHealth};
+    return {x: this.x, y: this.y, r: this.r, health: this.health, maxHealth: this.maxHealth};
 };
 
 // Server-side boss update packet
-Boss.prototype.getBossPacket = function(){
+Boss.prototype.getBossPacket = function() {
     return {x: this.x, y: this.y, health: this.health};
+};
+
+Boss.prototype.healthUpdate = function(damage, healing) {
+    this.health = Math.max(Math.min(this.maxHealth, this.health - damage + healing), 0);
 };
 
 // Draws the boss

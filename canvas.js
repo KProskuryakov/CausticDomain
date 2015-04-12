@@ -18,12 +18,15 @@ Canvas.draw = function() {
 };
 
 Canvas.gameScreen.prototype.draw = function() {
+    Canvas.Game.boss.draw(Canvas.ctx);
+    Canvas.Game.boss.drawHealth(Canvas.ctx);
+
     for (var i = 0; i < Canvas.Game.skillsAlive.length; i++) {
         Canvas.Game.skillsAlive[i].draw(Canvas.ctx);
     }
 
-    for (var j = 0; i < Canvas.Game.players.length; i++) {
-        Canvas.Game.players[i].draw(Canvas.ctx);
+    for (var j = 0; j < Canvas.Game.players.length; j++) {
+        Canvas.Game.players[j].draw(Canvas.ctx);
     }
 
     Canvas.Game.myPlayer.draw(Canvas.ctx);
@@ -123,13 +126,15 @@ Canvas.menuScreen.prototype.checkKeys = function(e) {
     return false;
 };
 
-Canvas.doClick = function(e) {
+Canvas.gameScreen.prototype.doClick = function(e) {
     var offset = Canvas.findOffset(Canvas.canvas);
     var posX = e.pageX - offset.x;     //find the x position of the mouse
     var posY = e.pageY - offset.y;     //find the y position of the mouse
 
-    //Canvas.Game.cast(Canvas.Game.myPlayer.x, Canvas.Game.myPlayer.y, posX, posY);
+    Canvas.Game.cast(Canvas.Game.myPlayer.x, Canvas.Game.myPlayer.y, posX, posY);
 };
+
+Canvas.menuScreen.prototype.doClick = function(e) {};
 
 Canvas.findOffset = function(obj) {
     var curX = 0;
@@ -156,6 +161,10 @@ Canvas.checkKeys = function(e) {
 
 Canvas.keyType = function(e) {
     Canvas.screen.keyType(e);
+};
+
+Canvas.doClick = function(e) {
+    Canvas.screen.doClick(e);
 };
 
 module.exports = Canvas;

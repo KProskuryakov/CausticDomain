@@ -48,7 +48,8 @@ Skill.prototype.clientUpdate = function(dt, myPlayer, boss) {
             myPlayer.health = Math.max(Math.min(myPlayer.maxHealth, myPlayer.health - this.aDamage + this.aHealing), 0);
         }
         if (bDist && bAngle <= this.cir / 2 && bAngle >= this.cir / -2) {
-            boss.health = Math.max(Math.min(boss.maxHealth, boss.health - this.eDamage + this.eHealing), 0);
+            boss.healthUpdate(this.eDamage, this.eHealing);
+            myPlayer.socket.emit("bossUpdate", {damage: this.eDamage, healing: this.eHealing});
         }
     }
 };

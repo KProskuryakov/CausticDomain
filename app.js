@@ -35,7 +35,8 @@ io.on('connection', function (socket) {
                 playerData.push(Game.players[i].getStartPacket());
             }
             player = Game.addPlayer(data.name, socket);
-            socket.emit('loginSuccess', {playerData: playerData, player: player.getStartPacket()});
+            socket.emit('loginSuccess', {playerData: playerData,
+                player: player.getStartPacket(), bossData: Game.boss.getStartPacket()});
             socket.broadcast.emit('playerConnected', player.getStartPacket());
         }
     });
@@ -53,5 +54,10 @@ io.on('connection', function (socket) {
         player.y = data.y;
         player.vel = data.vel;
         player.moveDir = data.moveDir;
+    });
+
+    socket.on('bossUpdate', function(data) {
+        socket.broadcast.emit('bossUpdate', data);
+        Game.boss.healthUpdate(data.damage, data.healing);
     });
 });

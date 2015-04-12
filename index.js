@@ -29,26 +29,31 @@ window.onload = function() {
 socket.on('loginSuccess', function (data) {
     Game.initMyPlayer(data.player, socket);
     Game.initPlayers(data.playerData);
+    Game.initBoss(data.bossData);
     Game.changeState("loggedIn");
 });
 
 // Server rejects client login
-socket.on('loginFailed', function () {
+socket.on('loginFailed', function() {
     console.log("Login Failed!");
 });
 
 // A change in another player's movement was detected and sent
-socket.on('moveChange', function (data) {
+socket.on('moveChange', function(data) {
     Game.moveChange(data);
 });
 
-socket.on('playerConnected', function (data) {
+socket.on('playerConnected', function(data) {
     Game.initPlayer(data);
 });
 
 // A player disconnected!
-socket.on('playerDisconnected', function (data) {
+socket.on('playerDisconnected', function(data) {
     Game.removePlayer(data.name);
+});
+
+socket.on('bossUpdate', function(data) {
+    Game.boss.healthUpdate(data.damage, data.healing);
 });
 
 // Updates 60 times a second as well as draws the updated screen
