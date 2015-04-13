@@ -41,6 +41,10 @@ Canvas.menuScreen.prototype.draw = function() {
     Canvas.ctx.fillText("" + this.name, 200, 200);
 };
 
+Canvas.gameScreen.prototype.resetKeyEvent = function() {
+    this.curKeyEvent = -1;
+};
+
 Canvas.gameScreen.prototype.checkKeys = function(e) {
     this.keys[e.keyCode] = e.type == 'keydown';
     if (Canvas.Game.myPlayer.combatState == "normal") {

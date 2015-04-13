@@ -50,7 +50,7 @@ Player.prototype.cast = function(Game, id, posX, posY) {
         this.revertTimer = skill.castTime;
         if (this.vel != 0) {
             this.vel = 0;
-            this.socket.emit("moveChange".this.getMovePacket());
+            this.socket.emit("moveChange", this.getMovePacket());
         }
         Game.skillsAlive.push(skill);
     }
@@ -62,6 +62,7 @@ Player.prototype.update = function(dt) {
         this.revertTimer -= dt;
         if (this.revertTimer < 0) {
             this.combatState = "normal";
+            this.Game.Canvas.screen.resetKeyEvent();
         } else {
             return;
         }
