@@ -23,7 +23,6 @@ function Player(x, y, r, maxHealth, socket, name, Game) {
     this.skills = {
         click: new Game.Skill(this.x, this.y, 0, 60, Math.PI / 2, 2.5, 0, 25, 0, 0, "brown")
     };
-    console.log(this.skills);
 }
 
 // Server-side for the player to send initial position to new connector
@@ -38,8 +37,7 @@ Player.prototype.getMovePacket = function() {
 
 Player.prototype.copySkill = function(id, dir) {
     var original = this.skills[id];
-    var copy = new this.Game.Skill(this.x, this.y, dir, original.r, original.cir, original.castTime, original.aDamage, original.eDamage, original.aHealing, original.eHealing, original.color);
-    return copy;
+    return new this.Game.Skill(this.x, this.y, dir, original.r, original.cir, original.castTime, original.aDamage, original.eDamage, original.aHealing, original.eHealing, original.color);
 };
 
 Player.prototype.cast = function(Game, id, posX, posY) {

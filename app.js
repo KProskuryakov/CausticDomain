@@ -25,10 +25,8 @@ io.on('connection', function (socket) {
 
     socket.on('login', function(data) {
         if (Game.nameExists(data.name)) {
-            console.log("Login Failed! " + data.name);
             socket.emit('loginFailed');
         } else {
-            console.log("Woah login! " + data.name);
             state = "loggedIn";
             var playerData = [];
             for (var i = 0; i < Game.players.length; i++) {
