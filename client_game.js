@@ -3,9 +3,9 @@
  */
 var Game = {};
 
-Game.Player = require("./player");
-Game.Boss = require("./boss");
-Game.Skill = require("./skill");
+var Player = require("./player");
+var Boss = require("./boss");
+var Skill = require("./skill");
 
 Game.state = "notLoggedIn"; // Possible states: notLoggedIn, loggedIn
 
@@ -20,12 +20,12 @@ Game.boss = null;
 Game.skillsAlive = [];
 
 Game.initMyPlayer = function(packet, socket) {
-    Game.myPlayer = new Game.Player(packet.x, packet.y, 10, 100, socket, packet.name, Game);
+    Game.myPlayer = new Player(packet.x, packet.y, 10, 100, socket, packet.name, Game);
 };
 
 
 Game.initPlayer = function (packet) {
-    var newPlayer = new Game.Player(packet.x, packet.y, 10, 100, null, packet.name, Game);
+    var newPlayer = new Player(packet.x, packet.y, 10, 100, null, packet.name, Game);
     newPlayer.vel = packet.vel;
     newPlayer.moveDir = packet.moveDir;
     Game.players.push(newPlayer);
@@ -38,7 +38,7 @@ Game.initPlayers = function(playerData) {
 };
 
 Game.initBoss = function(boss) {
-    Game.boss = new Game.Boss(boss.x, boss.y, boss.r, boss.health, boss.maxHealth);
+    Game.boss = new Boss(boss.x, boss.y, boss.r, boss.health, boss.maxHealth);
 };
 
 Game.moveChange = function(data) {
@@ -100,8 +100,6 @@ Game.update = function () {
 };
 
 Game.cast = function(x, y, posX, posY) {
-
-
     Game.skillsAlive.push();
 };
 

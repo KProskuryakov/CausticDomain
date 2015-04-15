@@ -168,7 +168,6 @@ Canvas.findOffset = function(obj) {
     }
 };
 
-// TODO replace all inner if-statements with a single function
 // Callback when any key event occurs during the game
 Canvas.checkKeys = function(e) {
     e = e || event; // to deal with IE
@@ -176,10 +175,12 @@ Canvas.checkKeys = function(e) {
 };
 
 Canvas.keyType = function(e) {
+    e = e || event; // to deal with IE
     Canvas.screen.keyType(e);
 };
 
 Canvas.doClick = function(e) {
+    e = e || event; // to deal with IE
     Canvas.screen.doClick(e);
 };
 

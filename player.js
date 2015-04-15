@@ -2,21 +2,9 @@
  * Created by Kostya on 4/8/2015.
  */
 // Represents the human entities in the game
-function Player(x, y, r, maxHealth, socket, name, Game) {
-    this.x = x; this.y = y;
-    this.ix = x; this.iy = y;
-    this.r = r;
-    this.vel = 0; this.moveDir = 0;
-    this.ivel = 115;
-
+function Player(socket, name, Game) {
     this.socket = socket;
     this.name = name;
-
-    this.health = maxHealth;
-    this.maxHealth = maxHealth;
-
-    this.combatState = "normal";
-    this.revertTimer = 0;
 
     this.Game = Game;
 
