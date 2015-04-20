@@ -2,15 +2,10 @@
  * Created by Kostya on 4/8/2015.
  */
 // Represents the human entities in the game
-function Player(socket, name, Game) {
+function Player(socket, name) {
     this.socket = socket;
     this.name = name;
-
-    this.Game = Game;
-
-    this.skills = {
-        click: new Game.Skill(this.x, this.y, 0, 60, Math.PI / 2, 2.5, 0, 25, 0, 0, "brown")
-    };
+    this.myCharacter = null;
 }
 
 // Server-side for the player to send initial position to new connector

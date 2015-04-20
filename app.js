@@ -15,47 +15,76 @@ app.get('/bundle.js', function (req, res) {
     res.sendFile(__dirname + '/bundle.js');
 });
 
-
-var Game = require("./server_game.js");
-
+var players = [];
 
 io.on('connection', function (socket) {
-    var state = "connected";
-    var player = null;
+    var player = {state: "connected"};
 
     socket.on('login', function(data) {
-        if (Game.nameExists(data.name)) {
+        if (nameExists(data.name)) {
             socket.emit('loginFailed');
         } else {
-            state = "loggedIn";
+            player.state = "selectingClass";
             var playerData = [];
-            for (var i = 0; i < Game.players.length; i++) {
-                playerData.push(Game.players[i].getStartPacket());
+            for (var i = 0; i < players.length; i++) {
+                playerData.push({name: players[i].name, classSelected: players[i].classSelected});
             }
-            player = Game.addPlayer(data.name, socket);
-            socket.emit('loginSuccess', {playerData: playerData,
-                player: player.getStartPacket(), bossData: Game.boss.getStartPacket()});
-            socket.broadcast.emit('playerConnected', player.getStartPacket());
+            player.name = data.name; player.socket = socket; player.classSelected = "Warrior";
+            socket.emit('loginSuccess', {playerData: playerData});
+            socket.broadcast.emit('playerConnected', {name: player.name, classSelected: "Warrior"});
+            players.push(player);
         }
     });
 
     socket.on('disconnect', function() {
-        if (state == "loggedIn") {
+        if (player.state != "connected") {
             socket.broadcast.emit('playerDisconnected', {name: player.name});
-            Game.removePlayer(player);
+            removePlayer(player);
         }
     });
 
-    socket.on('moveChange', function(data) {
-        socket.broadcast.emit('moveChange', data);
-        player.x = data.x;
-        player.y = data.y;
-        player.vel = data.vel;
-        player.moveDir = data.moveDir;
+    socket.on('classChange', function(data) {
+
     });
 
-    socket.on('bossUpdate', function(data) {
-        socket.broadcast.emit('bossUpdate', data);
-        Game.boss.healthUpdate(data.damage, data.healing);
-    });
+    //socket.on('moveChange', function(data) {
+    //    socket.broadcast.emit('moveChange', data);
+    //    player.x = data.x;
+    //    player.y = data.y;
+    //    player.vel = data.vel;
+    //    player.moveDir = data.moveDir;
+    //});
+    //
+    //socket.on('bossUpdate', function(data) {
+    //    socket.broadcast.emit('bossUpdate', data);
+    //    Game.boss.healthUpdate(data.damage, data.healing);
+    //});
 });
+
+function nameExists(name) {
+    for (var i = 0; i < players.length; i++) {
+        if (players[i].name == name) {
+            return true;
+        }
+    }
+    return false;
+}
+
+//function getPlayer(name) {
+//    for (var i = 0; i < Game.players.length; i++) {
+//        if (Game.players[i].name == name) {
+//            return Game.players[i];
+//        }
+//    }
+//}
+//
+//function addPlayer(name, socket, classSelected) {
+//    var player = {name: name, socket: socket, classSelected: classSelected};
+//    Game.
+//    return player;
+//}
+
+function removePlayer(player) {
+    var index = players.indexOf(player);
+    players.splice(index, 1);
+}

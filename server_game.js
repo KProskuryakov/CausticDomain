@@ -25,23 +25,5 @@ Game.nameExists = function(name) {
     return false;
 };
 
-Game.getPlayer = function(name) {
-    for (var i = 0; i < Game.players.length; i++) {
-        if (Game.players[i].name == name) {
-            return Game.players[i];
-        }
-    }
-};
-
-Game.addPlayer = function(name, socket) {
-    var player = new Game.Player(0, 0, 10, 100, socket, name, Game);
-    Game.players.push(player);
-    return player;
-};
-
-Game.removePlayer = function(player) {
-    var index = Game.players.indexOf(player);
-    Game.players.splice(index, 1);
-};
 
 module.exports = Game;

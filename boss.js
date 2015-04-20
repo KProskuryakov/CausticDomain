@@ -7,6 +7,8 @@ var Boss = function (x, y, r, health, maxHealth) {
     this.r = r;
     this.health = health;
     this.maxHealth = maxHealth;
+
+    this.effects = [];
 };
 
 // Server-side send initial boss values to client

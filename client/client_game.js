@@ -3,9 +3,9 @@
  */
 var Game = {};
 
-var Player = require("./player");
-var Boss = require("./boss");
-var Skill = require("./skill");
+var Player = require("./../player");
+var Boss = require("./../boss");
+var Skill = require("./../skill");
 
 Game.state = "notLoggedIn"; // Possible states: notLoggedIn, loggedIn
 
@@ -17,7 +17,8 @@ Game.myPlayer = null;
 Game.players = [];
 Game.boss = null;
 
-Game.skillsAlive = [];
+Game.mySkills = [];
+Game.otherSkills = [];
 
 Game.initMyPlayer = function(packet, socket) {
     Game.myPlayer = new Player(packet.x, packet.y, 10, 100, socket, packet.name, Game);
@@ -97,10 +98,6 @@ Game.update = function () {
     }
 
     Game.lastUpdate = new Date().getTime();
-};
-
-Game.cast = function(x, y, posX, posY) {
-    Game.skillsAlive.push();
 };
 
 module.exports = Game;

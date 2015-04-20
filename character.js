@@ -11,10 +11,16 @@ function Character(x, y, charClass) {
     this.ivel = 115;
 
     this.combatState = "normal";
-    this.revertTimer = 0;
+    this.startedCasting = 0;
+    this.castTime = 0;
 
-    this.skills = [];
-    this.effects = [];
+    this.damageReductionEffects = [];
+
+    this.skillTrackers = [];
+    for (var i = 0; i < charClass.skillTrackers.length; i++) {
+        this.skillTrackers.push(new charClass.skillTrackers[i]());
+    }
+
 
     this.getCharacterPacket = function(name) {
         return {x: this.x, y: this.y, vel: this.vel, moveDir: this.moveDir, name: name};
@@ -22,6 +28,24 @@ function Character(x, y, charClass) {
 
     this.update = function(dt) {
 
+    };
+
+    this.takeDamage = function(damage, type) {
+
+    };
+
+    this.takeHealing = function(healing) {
+
+    };
+
+    this.addDamageReductionEffect = function(name, reduction, duration) {
+        for (var i = 0; i < this.damageReductionEffects.length; i++) {
+            if (name == this.damageReductionEffects[i].name) {
+                this.damageReductionEffects[i].duration = duration;
+                return;
+            }
+        }
+        this.damageReductionEffects.push({name: name, reduction: reduction, duration: duration, startTime: Date.now()});
     };
 }
 

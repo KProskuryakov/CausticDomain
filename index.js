@@ -5,61 +5,38 @@
 // Initialize connection with server
 var socket = io();
 
-// Browserify boilerplate, initializes all instances of module code
-var Game = require("./client_game.js");
-var Canvas = require("./canvas.js");
+var start = require("./client/start_screen");
+var screen = null;
 
-Canvas.Game = Game;
-Game.Canvas = Canvas;
-
+exports.changeScreen = function(newScreen) {
+    screen = newScreen;
+};
 
 // Called at the beginning to initialize the event listeners on the canvas
 window.onload = function() {
     var canvas = document.getElementById("myCanvas");
-    Canvas.canvas = canvas;
-    Canvas.ctx = canvas.getContext("2d");
-    canvas.addEventListener('keydown', Canvas.checkKeys, true);
-    canvas.addEventListener('keyup', Canvas.checkKeys, true);
-    canvas.addEventListener('click', Canvas.doClick, false);
-    Canvas.socket = socket;
+    screen = new start(socket, canvas.getContext('2d'));
+    canvas.addEventListener('keydown', checkKeys, true);
+    canvas.addEventListener('keyup', checkKeys, true);
+    canvas.addEventListener('click', doClick, false);
+    canvas.addEventListener('mousemove', mouseMove, false);
+    setInterval(updateLoop, 1000 / 60);
 };
-
-
-// Server sends client data upon login
-socket.on('loginSuccess', function (data) {
-    Game.initMyPlayer(data.player, socket);
-    Game.initPlayers(data.playerData);
-    Game.initBoss(data.bossData);
-    Game.changeState("loggedIn");
-});
-
-// Server rejects client login
-socket.on('loginFailed', function() {
-    console.log("Login Failed!");
-});
-
-// A change in another player's movement was detected and sent
-socket.on('moveChange', function(data) {
-    Game.moveChange(data);
-});
-
-socket.on('playerConnected', function(data) {
-    Game.initPlayer(data);
-});
-
-// A player disconnected!
-socket.on('playerDisconnected', function(data) {
-    Game.removePlayer(data.name);
-});
-
-socket.on('bossUpdate', function(data) {
-    Game.boss.healthUpdate(data.damage, data.healing);
-});
 
 // Updates 60 times a second as well as draws the updated screen
 function updateLoop() {
-    Game.update();
-    Canvas.draw();
+    screen.update();
+    screen.draw();
 }
 
-setInterval(updateLoop, 1000 / 60);
+function checkKeys(e) {
+    screen.checkKeys(e);
+}
+
+function doClick(e) {
+    screen.doClick(e);
+}
+
+function mouseMove(e) {
+    screen.mouseMove(e);
+}
