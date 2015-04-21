@@ -51,6 +51,12 @@ io.on('connection', function (socket) {
     socket.on('readyChange', function(data) {
         player.ready = data.ready;
         socket.broadcast.emit('readyChange', {name: player.name, ready: player.ready});
+        for (var i = 0; i < players.length; i++) {
+            if (!players[i].ready) {
+                return;
+            }
+        }
+        io.emit('allReady');
     });
 
     //socket.on('moveChange', function(data) {

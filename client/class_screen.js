@@ -2,6 +2,9 @@
  * Created by Kostya on 4/20/2015.
  */
 var ClassScreen = function(socket, ctx, name, loginData) {
+    var index = require("./../index");
+    var game = require("./game_screen");
+
     var canvas = document.getElementById("myCanvas");
 
     var classSelected = "Warrior";
@@ -10,7 +13,6 @@ var ClassScreen = function(socket, ctx, name, loginData) {
 
     var classText = "Welcome " + name + ", choose your class!";
     var selectedText = "Current class selected: ";
-    var readyText = "Ready: ";
     var playerText = "Players logged in:";
     var readyButton = {x: 640, y: 560, w: 120, h: 30, text: "Ready up!"};
     var warriorButton = {x: 620, y: 100, w: 150, h: 30, text: "Warrior (Tank)"};
@@ -120,11 +122,17 @@ var ClassScreen = function(socket, ctx, name, loginData) {
         }
     }
 
+    function allReady() {
+        unbind();
+        index.changeScreen(new game(socket, ctx, name, classSelected, players));
+    }
+
     function bind() {
         socket.on('playerConnected', playerConnected);
         socket.on('playerDisconnected', playerDisconnected);
         socket.on('classChange', classChange);
         socket.on('readyChange', readyChange);
+        socket.on('allReady', allReady);
     }
 
     function unbind() {
@@ -132,6 +140,8 @@ var ClassScreen = function(socket, ctx, name, loginData) {
         socket.removeListener('playerDisconnected', playerDisconnected);
         socket.removeListener('classChange', classChange);
         socket.removeListener('readyChange', readyChange);
+        socket.removeListener('allReady', allReady);
+
     }
 
     bind();
