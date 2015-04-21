@@ -27,11 +27,11 @@ io.on('connection', function (socket) {
             player.state = "selectingClass";
             var playerData = [];
             for (var i = 0; i < players.length; i++) {
-                playerData.push({name: players[i].name, classSelected: players[i].classSelected});
+                playerData.push({name: players[i].name, classSelected: players[i].classSelected, ready: players[i].ready});
             }
-            player.name = data.name; player.socket = socket; player.classSelected = "Warrior";
+            player.name = data.name; player.socket = socket; player.classSelected = "Warrior"; player.ready = false;
             socket.emit('loginSuccess', {playerData: playerData});
-            socket.broadcast.emit('playerConnected', {name: player.name, classSelected: "Warrior"});
+            socket.broadcast.emit('playerConnected', {name: player.name, classSelected: "Warrior", ready: false});
             players.push(player);
         }
     });
@@ -44,7 +44,13 @@ io.on('connection', function (socket) {
     });
 
     socket.on('classChange', function(data) {
+        player.classSelected = data.classSelected;
+        socket.broadcast.emit('classChange', {name: player.name, classSelected: data.classSelected});
+    });
 
+    socket.on('readyChange', function(data) {
+        player.ready = data.ready;
+        socket.broadcast.emit('readyChange', {name: player.name, ready: player.ready});
     });
 
     //socket.on('moveChange', function(data) {

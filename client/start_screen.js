@@ -2,9 +2,6 @@
  * Created by Kostya on 4/19/2015.
  */
 var StartScreen = function(socket, ctx) {
-    var socket = socket;
-    var ctx = ctx;
-
     var index = require("./../index");
     var classScreen = require("./class_screen");
 
@@ -53,13 +50,26 @@ var StartScreen = function(socket, ctx) {
 
     this.mouseMove = function(e) {};
 
-    socket.on('loginSuccess', function (data) {
+    function loginSuccess(data) {
+        unbind();
         index.changeScreen(new classScreen(socket, ctx, name, data));
-    });
+    }
 
-    socket.on('loginFailed', function() {
+    function loginFailed() {
         failed = true;
-    });
+    }
+
+    function bind() {
+        socket.on('loginSuccess', loginSuccess);
+        socket.on('loginFailed', loginFailed);
+    }
+
+    function unbind() {
+        socket.removeListener('loginSuccess', loginSuccess);
+        socket.removeListener('loginFailed', loginFailed);
+    }
+
+    bind();
 };
 
 module.exports = StartScreen;
