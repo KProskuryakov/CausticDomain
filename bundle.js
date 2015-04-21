@@ -32,7 +32,7 @@ var ClassScreen = function(socket, ctx, name, loginData) {
         ctx.font = "20px Arial";
         ctx.fillStyle = "black";
         ctx.fillText(classText, 400 - ctx.measureText(classText).width / 2, 30);
-        ctx.fillText(selectedText + classSelected, 400 - ctx.measureText(selectedText).width / 2, 60);
+        ctx.fillText(selectedText + classSelected, 400 - ctx.measureText(selectedText + classSelected).width / 2, 60);
         ctx.fillText(playerText, 20, 100);
         ctx.fillText("(You) " + name + " - " + classSelected, 30, 130);
         if(ready) {
