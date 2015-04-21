@@ -122,9 +122,9 @@ var ClassScreen = function(socket, ctx, name, loginData) {
         }
     }
 
-    function allReady() {
+    function allReady(data) {
         unbind();
-        index.changeScreen(new game(socket, ctx, name, classSelected, players));
+        index.changeScreen(new game(socket, ctx, name, classSelected, players, data));
     }
 
     function bind() {

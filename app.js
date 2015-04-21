@@ -18,7 +18,7 @@ app.get('/bundle.js', function (req, res) {
 var players = [];
 
 io.on('connection', function (socket) {
-    var player = {state: "connected"};
+    var player = {state: "connected", socket: socket};
 
     socket.on('login', function(data) {
         if (nameExists(data.name)) {
@@ -56,17 +56,19 @@ io.on('connection', function (socket) {
                 return;
             }
         }
-        io.emit('allReady');
+        for (i = 0; i < players.length; i++) {
+            players[i].socket.emit('allReady', {x: i*20});
+        }
     });
 
-    //socket.on('moveChange', function(data) {
-    //    socket.broadcast.emit('moveChange', data);
-    //    player.x = data.x;
-    //    player.y = data.y;
-    //    player.vel = data.vel;
-    //    player.moveDir = data.moveDir;
-    //});
-    //
+    socket.on('moveChange', function(data) {
+        socket.broadcast.emit('moveChange', data);
+        player.x = data.x;
+        player.y = data.y;
+        player.velX = data.velX;
+        player.velY = data.velY;
+    });
+
     //socket.on('bossUpdate', function(data) {
     //    socket.broadcast.emit('bossUpdate', data);
     //    Game.boss.healthUpdate(data.damage, data.healing);
