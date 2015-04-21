@@ -8,7 +8,7 @@ var ClassScreen = function(socket, ctx, name, loginData) {
     var canvas = document.getElementById("myCanvas");
 
     var classSelected = "Warrior";
-    var ready = false;
+    var ready = "notReady";
     var players = [];
 
     var classText = "Welcome " + name + ", choose your class!";
@@ -34,20 +34,22 @@ var ClassScreen = function(socket, ctx, name, loginData) {
         ctx.fillText(selectedText + classSelected, 400 - ctx.measureText(selectedText + classSelected).width / 2, 60);
         ctx.fillText(playerText, 20, 100);
         ctx.fillText("(You) " + name + " - " + classSelected, 30, 130);
-        if(ready) {
-            ctx.fillStyle = "green";
-        } else {
+        if(ready == "notReady") {
             ctx.fillStyle = "red";
+        } else if (ready == "ready") {
+            ctx.fillStyle = "green";
         }
         ctx.fillRect(5, 110, 20, 20);
         for (var i = 0; i < players.length; i++) {
             ctx.fillStyle = "black";
             var cur = players[i];
             ctx.fillText(cur.name + " - " + cur.classSelected, 30, 160 + i * 30);
-            if (cur.ready) {
-                ctx.fillStyle = "green";
-            } else {
+            if(cur.ready == "notReady") {
                 ctx.fillStyle = "red";
+            } else if (cur.ready == "ready") {
+                ctx.fillStyle = "green";
+            } else if (cur.ready == "inGame") {
+                ctx.fillStyle = "yellow";
             }
             ctx.fillRect(5, 140 + i * 30, 20, 20);
         }

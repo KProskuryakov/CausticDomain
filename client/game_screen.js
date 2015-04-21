@@ -38,7 +38,6 @@ var GameScreen = function(socket, ctx, name, classSelected, players, data) {
 
         lastUpdate = Date.now();
     };
-
     function updateMyPlayer() {
         if (myCharacter.newDirection != myCharacter.curDirection) {
             switch(myCharacter.newDirection) {
@@ -159,6 +158,7 @@ var GameScreen = function(socket, ctx, name, classSelected, players, data) {
     this.doClick = function(e) {};
 
     this.mouseMove = function(e) {};
+
 
     function moveChange(data) {
         for (var i = 0; i < players.length; i++) {

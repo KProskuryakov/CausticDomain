@@ -29,9 +29,9 @@ io.on('connection', function (socket) {
             for (var i = 0; i < players.length; i++) {
                 playerData.push({name: players[i].name, classSelected: players[i].classSelected, ready: players[i].ready});
             }
-            player.name = data.name; player.socket = socket; player.classSelected = "Warrior"; player.ready = false;
+            player.name = data.name; player.socket = socket; player.classSelected = "Warrior"; player.ready = "notReady";
             socket.emit('loginSuccess', {playerData: playerData});
-            socket.broadcast.emit('playerConnected', {name: player.name, classSelected: "Warrior", ready: false});
+            socket.broadcast.emit('playerConnected', {name: player.name, classSelected: "Warrior", ready: "notReady"});
             players.push(player);
         }
     });
@@ -52,7 +52,7 @@ io.on('connection', function (socket) {
         player.ready = data.ready;
         socket.broadcast.emit('readyChange', {name: player.name, ready: player.ready});
         for (var i = 0; i < players.length; i++) {
-            if (!players[i].ready) {
+            if (players[i].ready == "notReady") {
                 return;
             }
         }
