@@ -11,7 +11,90 @@ arguments[4][1][0].apply(exports,arguments)
 /**
  * Created by Kostya on 4/20/2015.
  */
-Warrior = {};
+Warrior = {
+    maxHealth: 650,
+    skillTrackers: [],
+    skills: [],
+    clientSkills: []
+};
+
+Warrior.skillTrackers[0] = function() {
+    this.castTime = 1;
+    this.cooldown = 1;
+    this.curCooldown = 0;
+
+    this.cast = function(x, y, char, aliveSkills) {
+        if (char.combatState == "normal" && this.curCooldown <= 0) {
+            char.combatState = "casting";
+            aliveSkills.push(new Warrior.skills[0](x, y, Math.atan2(-300 + y, -400 + x), this.castTime, "brown", 50, Math.PI / 2));
+            this.curCooldown = this.cooldown + this.castTime;
+        }
+    };
+
+    this.update = function(dt, char) {
+        this.curCooldown = Math.max(0, this.curCooldown - dt);
+        if (this.curCooldown <= this.cooldown) {
+            char.combatState = "normal";
+        }
+    };
+
+    this.draw = function(ctx) {
+        ctx.font = "14px Arial";
+        ctx.fillStyle = "black";
+        ctx.fillText("LMB: " + parseFloat(Math.round(this.curCooldown * 100) / 100).toFixed(1), 5, 582);
+    };
+};
+Warrior.skills[0] = function(x, y, dir, castTime, color, r, cir) {
+    this.state = "casting";
+    this.curCastTime = 0;
+
+    this.update = function(dt) {
+        switch(this.state) {
+            case "casting":
+                this.curCastTime = Math.min(castTime, this.curCastTime + dt);
+                if (this.curCastTime >= castTime) {
+                    //var bDir = Math.atan2(boss.y - this.y, boss.x - this.x);
+                    //var bDist = Math.pow(boss.x - this.x, 2) + Math.pow(boss.y - this.y, 2) < Math.pow(this.r + boss.r, 2);
+                    //var bAngle = (bDir - this.dir) % (Math.PI * 2);
+                    //
+                    //if (bDist && bAngle <= this.cir / 2 && bAngle >= this.cir / -2 && castByMe) {
+                    //    boss.takeDamage(50, "physical");
+                    //    myPlayer.myCharacter.addDamageReductionEffect(this.name, this.effect, this.effectDuration);
+                    //}
+                    this.state = "dead";
+                }
+                break;
+            case "dead":
+                break;
+        }
+
+
+    };
+
+    this.draw = function(ctx) {
+        switch(this.state) {
+            case "casting":
+                ctx.globalAlpha = .3;
+                ctx.fillStyle = color;
+
+                ctx.beginPath();
+                ctx.moveTo(400, 300);
+                ctx.arc(400, 300, r, dir - (cir / 2), dir + (cir / 2));
+                ctx.fill();
+
+                ctx.globalAlpha = .6;
+                ctx.beginPath();
+                ctx.moveTo(400, 300);
+                ctx.arc(400, 300, r * this.curCastTime / castTime, dir - (cir / 2), dir + (cir / 2));
+                ctx.fill();
+
+                ctx.globalAlpha = 1;
+                break;
+            case "dead":
+                break;
+        }
+    };
+};
 
 module.exports = Warrior;
 },{}],5:[function(require,module,exports){
@@ -98,7 +181,7 @@ var ClassScreen = function(socket, ctx, name, loginData) {
             classSelected = "Priest";
             socket.emit('classChange', {classSelected: "Priest"});
         } else if (checkButton(readyButton, posX, posY)) {
-            ready = !ready;
+            ready = "ready";
             socket.emit('readyChange', {ready: ready});
             if (!ready) {
                 readyButton.text = "Ready up!";
@@ -195,10 +278,11 @@ module.exports = ClassScreen;
  * Created by Kostya on 4/20/2015.
  */
 var GameScreen = function(socket, ctx, name, classSelected, players, data) {
-    var Warrior = require("./../classes/warrior");
-    var Priest = require("./../classes/priest");
-    var Rogue = require("./../classes/rogue");
-    var Mage = require("./../classes/mage");
+    var Classes = {};
+    Classes.Warrior = require("./../classes/warrior");
+    Classes.Priest = require("./../classes/priest");
+    Classes.Rogue = require("./../classes/rogue");
+    Classes.Mage = require("./../classes/mage");
 
     var canvas = document.getElementById("myCanvas");
 
@@ -211,8 +295,11 @@ var GameScreen = function(socket, ctx, name, classSelected, players, data) {
 
     var myCharacter = {
         x: data.x, y: 0, r: 10, velX: 0, velY: 0,
-        curDirection: "none", newDirection: "none"
+        curDirection: "none", newDirection: "none",
+        combatState: "normal", directionAfterCast: "none"
     };
+    var lmbSkill = new Classes[classSelected].skillTrackers[0]();
+    var aliveSkills = [];
 
     socket.emit('moveChange', getTeleportChange());
 
@@ -228,10 +315,20 @@ var GameScreen = function(socket, ctx, name, classSelected, players, data) {
 
         updateMyPlayer();
         updateOtherPlayers();
+        updateSkillTrackers();
+        updateAliveSkills();
 
         lastUpdate = Date.now();
     };
     function updateMyPlayer() {
+        if (myCharacter.combatState == "casting") {
+            //myCharacter.directionAfterCast = myCharacter.newDirection;
+            myCharacter.newDirection = "none";
+        }
+        //if (myCharacter.combatState == "revert") {
+        //    myCharacter.newDirection = myCharacter.directionAfterCast;
+        //    myCharacter.combatState = "normal";
+        //}
         if (myCharacter.newDirection != myCharacter.curDirection) {
             switch(myCharacter.newDirection) {
                 case "none":
@@ -298,11 +395,25 @@ var GameScreen = function(socket, ctx, name, classSelected, players, data) {
             }
         }
     }
+    function updateSkillTrackers() {
+        lmbSkill.update(dt, myCharacter);
+    }
+    function updateAliveSkills() {
+        for (var i = 0; i < aliveSkills.length; i++) {
+            aliveSkills[i].update(dt);
+            if (aliveSkills[i].state == "dead") {
+                aliveSkills.splice(i, 1);
+                i--;
+            }
+        }
+    }
 
     this.draw = function() {
         ctx.clearRect(0, 0, 800, 600);
-        drawPlayer();
+        drawAliveSkills();
         drawOtherPlayers();
+        drawSkillTrackers();
+        drawPlayer();
     };
     function drawPlayer() {
         ctx.fillStyle = "black";
@@ -321,6 +432,14 @@ var GameScreen = function(socket, ctx, name, classSelected, players, data) {
             ctx.fill();
             ctx.font = "8px Arial";
             ctx.fillText(players[i].name, x - ctx.measureText(players[i].name).width / 2, y - 15);
+        }
+    }
+    function drawSkillTrackers() {
+        lmbSkill.draw(ctx);
+    }
+    function drawAliveSkills() {
+        for (var i = 0; i < aliveSkills.length; i++) {
+            aliveSkills[i].draw(ctx);
         }
     }
 
@@ -348,7 +467,13 @@ var GameScreen = function(socket, ctx, name, classSelected, players, data) {
         return false;
     };
 
-    this.doClick = function(e) {};
+    this.doClick = function(e) {
+        var offset = findOffset(canvas);
+        var posX = e.pageX - offset.x;     //find the x position of the mouse
+        var posY = e.pageY - offset.y;     //find the y position of the mouse
+        lmbSkill.cast(posX, posY, myCharacter, aliveSkills);
+        console.log(lmbSkill);
+    };
 
     this.mouseMove = function(e) {};
 
@@ -387,6 +512,19 @@ var GameScreen = function(socket, ctx, name, classSelected, players, data) {
 
     bind();
 };
+
+function findOffset(obj) {
+    var curX = 0;
+    var curY = 0;
+    if (obj.offsetParent) {   //if the browser supports offsetParent then we can use it
+        do {
+            curX += obj.offsetLeft;  //get left position of the obj and add it to the var.
+            curY += obj.offsetTop;   //gets top position and add it to the var.
+        } while (obj = obj.offsetParent);
+
+        return {x:curX, y:curY};  //this is a function that returns two values
+    }
+}
 
 module.exports = GameScreen;
 },{"./../classes/mage":1,"./../classes/priest":2,"./../classes/rogue":3,"./../classes/warrior":4}],7:[function(require,module,exports){

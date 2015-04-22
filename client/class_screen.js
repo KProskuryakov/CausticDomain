@@ -81,7 +81,7 @@ var ClassScreen = function(socket, ctx, name, loginData) {
             classSelected = "Priest";
             socket.emit('classChange', {classSelected: "Priest"});
         } else if (checkButton(readyButton, posX, posY)) {
-            ready = !ready;
+            ready = "ready";
             socket.emit('readyChange', {ready: ready});
             if (!ready) {
                 readyButton.text = "Ready up!";

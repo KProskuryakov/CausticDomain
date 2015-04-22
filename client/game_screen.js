@@ -2,10 +2,11 @@
  * Created by Kostya on 4/20/2015.
  */
 var GameScreen = function(socket, ctx, name, classSelected, players, data) {
-    var Warrior = require("./../classes/warrior");
-    var Priest = require("./../classes/priest");
-    var Rogue = require("./../classes/rogue");
-    var Mage = require("./../classes/mage");
+    var Classes = {};
+    Classes.Warrior = require("./../classes/warrior");
+    Classes.Priest = require("./../classes/priest");
+    Classes.Rogue = require("./../classes/rogue");
+    Classes.Mage = require("./../classes/mage");
 
     var canvas = document.getElementById("myCanvas");
 
@@ -18,8 +19,11 @@ var GameScreen = function(socket, ctx, name, classSelected, players, data) {
 
     var myCharacter = {
         x: data.x, y: 0, r: 10, velX: 0, velY: 0,
-        curDirection: "none", newDirection: "none"
+        curDirection: "none", newDirection: "none",
+        combatState: "normal", directionAfterCast: "none"
     };
+    var lmbSkill = new Classes[classSelected].skillTrackers[0]();
+    var aliveSkills = [];
 
     socket.emit('moveChange', getTeleportChange());
 
@@ -35,10 +39,20 @@ var GameScreen = function(socket, ctx, name, classSelected, players, data) {
 
         updateMyPlayer();
         updateOtherPlayers();
+        updateSkillTrackers();
+        updateAliveSkills();
 
         lastUpdate = Date.now();
     };
     function updateMyPlayer() {
+        if (myCharacter.combatState == "casting") {
+            //myCharacter.directionAfterCast = myCharacter.newDirection;
+            myCharacter.newDirection = "none";
+        }
+        //if (myCharacter.combatState == "revert") {
+        //    myCharacter.newDirection = myCharacter.directionAfterCast;
+        //    myCharacter.combatState = "normal";
+        //}
         if (myCharacter.newDirection != myCharacter.curDirection) {
             switch(myCharacter.newDirection) {
                 case "none":
@@ -105,11 +119,25 @@ var GameScreen = function(socket, ctx, name, classSelected, players, data) {
             }
         }
     }
+    function updateSkillTrackers() {
+        lmbSkill.update(dt, myCharacter);
+    }
+    function updateAliveSkills() {
+        for (var i = 0; i < aliveSkills.length; i++) {
+            aliveSkills[i].update(dt);
+            if (aliveSkills[i].state == "dead") {
+                aliveSkills.splice(i, 1);
+                i--;
+            }
+        }
+    }
 
     this.draw = function() {
         ctx.clearRect(0, 0, 800, 600);
-        drawPlayer();
+        drawAliveSkills();
         drawOtherPlayers();
+        drawSkillTrackers();
+        drawPlayer();
     };
     function drawPlayer() {
         ctx.fillStyle = "black";
@@ -128,6 +156,14 @@ var GameScreen = function(socket, ctx, name, classSelected, players, data) {
             ctx.fill();
             ctx.font = "8px Arial";
             ctx.fillText(players[i].name, x - ctx.measureText(players[i].name).width / 2, y - 15);
+        }
+    }
+    function drawSkillTrackers() {
+        lmbSkill.draw(ctx);
+    }
+    function drawAliveSkills() {
+        for (var i = 0; i < aliveSkills.length; i++) {
+            aliveSkills[i].draw(ctx);
         }
     }
 
@@ -155,7 +191,13 @@ var GameScreen = function(socket, ctx, name, classSelected, players, data) {
         return false;
     };
 
-    this.doClick = function(e) {};
+    this.doClick = function(e) {
+        var offset = findOffset(canvas);
+        var posX = e.pageX - offset.x;     //find the x position of the mouse
+        var posY = e.pageY - offset.y;     //find the y position of the mouse
+        lmbSkill.cast(posX, posY, myCharacter, aliveSkills);
+        console.log(lmbSkill);
+    };
 
     this.mouseMove = function(e) {};
 
@@ -194,5 +236,18 @@ var GameScreen = function(socket, ctx, name, classSelected, players, data) {
 
     bind();
 };
+
+function findOffset(obj) {
+    var curX = 0;
+    var curY = 0;
+    if (obj.offsetParent) {   //if the browser supports offsetParent then we can use it
+        do {
+            curX += obj.offsetLeft;  //get left position of the obj and add it to the var.
+            curY += obj.offsetTop;   //gets top position and add it to the var.
+        } while (obj = obj.offsetParent);
+
+        return {x:curX, y:curY};  //this is a function that returns two values
+    }
+}
 
 module.exports = GameScreen;
